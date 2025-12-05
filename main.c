@@ -1,4 +1,5 @@
 #include "MaxPersonInput.h"
+#include "MaxWeightInput.h"
 #include "PasswordInput.h"
 #include "display.h"
 #include "initialize.h"
@@ -18,7 +19,9 @@ enum WorkState
     WS_VarifyPassword,
     WS_PasswordWrong,
     WS_Person,
-    WS_Weight
+    WS_Weight,
+    WS_Finish,
+    WS_Free
 };
 uint8_t workState = WS_GetPassword;
 uint8_t castTable[] = {
@@ -33,11 +36,15 @@ uint8_t weightPrompt[] = {
     DC_R, DC_L& DS_Dot, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled
 };
 uint8_t wrongPasswordDelayTime = 100;
+uint8_t finishDelayTime = 100;
+uint8_t finishPrompt[] = {DC_F, DC_1, DC_N, DC_1, DC_5, DC_H, DS_Disabled, DS_Disabled};
 
 void getPassword();
 void getMaxPerson();
+void getMaxWeight();
 void varifyPassword();
 void wrongPasswordDelay();
+void finishDelay();
 
 int main()
 {
@@ -67,6 +74,12 @@ void onTimer0Timeout() INTERRUPT(1)
         getMaxPerson();
         break;
     case WS_Weight:
+        getMaxWeight();
+        break;
+    case WS_Finish:
+        finishDelay();
+        break;
+    case WS_Free:
         break;
     }
     refreshDisplay();
@@ -127,6 +140,34 @@ void getMaxPerson()
     MaxPersonInput_append(&maxPersonInput, keyboard.releasedKey);
 }
 
+void getMaxWeight()
+{
+    uint8_t i = 0;
+    promptInput(2 + maxWeightInput.currentIndex);
+    Keyboard_getKey(&keyboard);
+    if (keyboard.state != Released)
+        return;
+    if (keyboard.releasedKey == SK_Enter)
+    {
+        workState = WS_Finish;
+        for (; i < 8; i++)
+            displayBuffer[i] = finishPrompt[i];
+        return;
+    }
+    if (keyboard.releasedKey == SK_Backspace)
+    {
+        displayBuffer[2 + maxWeightInput.currentIndex] = DS_Disabled;
+        MaxWeightInput_backspace(&maxWeightInput);
+        return;
+    }
+    if (maxWeightInput.currentIndex == 3)
+        return;
+    if (keyboard.releasedKey >= 10)
+        return;
+    displayBuffer[2 + maxWeightInput.currentIndex] = castTable[keyboard.releasedKey];
+    MaxWeightInput_append(&maxWeightInput, keyboard.releasedKey);
+}
+
 void varifyPassword()
 {
     uint8_t i = 0;
@@ -171,4 +212,16 @@ void wrongPasswordDelay()
         return;
     }
     wrongPasswordDelayTime--;
+}
+
+void finishDelay()
+{
+    uint8_t i = 0;
+    if (finishDelayTime == 0)
+    {
+        for (; i < 8; i++)
+            displayBuffer[i] = DS_Disabled;
+        workState = WS_Free;
+    }
+    finishDelayTime--;
 }

@@ -1,6 +1,7 @@
 #include "initialize.h"
 #include "Keyboard.h"
 #include "MaxPersonInput.h"
+#include "MaxWeightInput.h"
 #include "PasswordInput.h"
 #include "display.h"
 #include "utils.h"
@@ -12,6 +13,7 @@ void init()
     PasswordInput_init(&passwordInput);
     Keyboard_init(&keyboard);
     MaxPersonInput_init(&maxPersonInput);
+    MaxWeightInput_init(&maxWeightInput);
 }
 
 void initTimer()

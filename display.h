@@ -35,6 +35,7 @@ enum DisplatCharacter
     DC_D = DS_TopRight & DS_BottomRight & DS_Bottom & DS_BottomLeft & DS_Middle,
     DC_E = DS_Top & DS_Bottom & DS_BottomLeft & DS_TopLeft & DS_Middle,
     DC_F = DS_Top & DS_BottomLeft & DS_TopLeft & DS_Middle,
+    DC_H = DS_TopRight & DS_BottomRight & DS_BottomLeft & DS_TopLeft & DS_Middle,
     DC_R = DS_BottomLeft & DS_Middle,
     DC_L = DS_Bottom & DS_BottomLeft & DS_TopLeft,
     DC_N = DS_TopRight & DS_BottomRight & DS_BottomLeft & DS_TopLeft & DS_Top,

@@ -411,6 +411,11 @@
               <FileType>1</FileType>
               <FilePath>.\MaxPersonInput.c</FilePath>
             </File>
+            <File>
+              <FileName>MaxWeightInput.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MaxWeightInput.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
