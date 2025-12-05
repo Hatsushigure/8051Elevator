@@ -406,6 +406,11 @@
               <FileType>1</FileType>
               <FilePath>.\Led.c</FilePath>
             </File>
+            <File>
+              <FileName>MaxPersonInput.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MaxPersonInput.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

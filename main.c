@@ -1,4 +1,4 @@
-#include "Led.h"
+#include "MaxPersonInput.h"
 #include "PasswordInput.h"
 #include "display.h"
 #include "initialize.h"
@@ -14,7 +14,9 @@
 
 enum WorkState
 {
-    WS_Password
+    WS_Password,
+    WS_Person,
+    WS_Weight
 };
 uint8_t workState = WS_Password;
 uint8_t castTable[] = {
@@ -22,8 +24,16 @@ uint8_t castTable[] = {
 };
 uint8_t truePassword[] = {1, 1, 4, 5, 1, 4};
 bit passwordIsRight = 1;
+uint8_t personPrompt[] = {
+    DC_N, DC_O& DS_Dot, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled
+};
+uint8_t errorPrompt[] = {DC_E, DC_R, DC_R, DC_O, DC_R, DS_Disabled, DS_Disabled, DS_Disabled};
+uint8_t weightPrompt[] = {
+    DC_R, DC_L& DS_Dot, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled
+};
 
 void getPassword();
+void getMaxPerson();
 void varifyPassword();
 
 int main()
@@ -52,6 +62,11 @@ void onTimer0Timeout() INTERRUPT(1)
             varifyPassword();
         }
         break;
+    case WS_Person:
+        getMaxPerson();
+        break;
+    case WS_Weight:
+        break;
     }
     refreshDisplay();
     EA = 1;
@@ -72,15 +87,40 @@ void getPassword()
     }
 }
 
+void getMaxPerson()
+{
+    uint8_t i = 0;
+    promptInput(2 + maxPersonInput.currentIndex);
+    Keyboard_getKey(&keyboard);
+    if (keyboard.state != Released)
+        return;
+    if (maxPersonInput.currentIndex == 3)
+    {
+        if (keyboard.releasedKey == SK_Enter)
+        {
+            workState = WS_Weight;
+            for (; i < 8; i++)
+                displayBuffer[i] = weightPrompt[i];
+        }
+    } else
+    {
+        displayBuffer[2 + maxPersonInput.currentIndex] = castTable[keyboard.releasedKey];
+        MaxPersonInput_append(&maxPersonInput, keyboard.releasedKey);
+    }
+}
+
 void varifyPassword()
 {
-    uint8_t error[] = {DC_E, DC_R, DC_R, DC_O, DC_R, DS_Disabled, DS_Disabled, DS_Disabled};
     uint8_t i = 0;
-
+    uint8_t* targetPrompt;
     if (!passwordIsRight)
+        targetPrompt = errorPrompt;
+    else
     {
-        for (; i < 8; i++)
-            displayBuffer[i] = error[i];
-    } else
-        Led_turnOn(0);
+        workState = WS_Person;
+        targetPrompt = personPrompt;
+    }
+    resetDelayDisappear();
+    for (; i < 8; i++)
+        displayBuffer[i] = targetPrompt[i];
 }

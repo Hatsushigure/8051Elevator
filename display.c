@@ -70,4 +70,11 @@ void promptInput(uint8_t index)
     }
 }
 
-void delayDisappear(uint8_t index, uint8_t time) { disappearCounter[index] = time; }
+void delayDisappear(uint8_t index, int8_t time) { disappearCounter[index] = time; }
+
+void resetDelayDisappear()
+{
+    uint8_t i = 0;
+    for (; i < 8; i++)
+        disappearCounter[i] = -1;
+}

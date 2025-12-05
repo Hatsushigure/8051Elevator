@@ -9,6 +9,14 @@ enum KeyboardState
     Released
 };
 
+enum SpecialKey
+{
+    SK_E = 14,
+    SK_Backspace = 14,
+    SK_F = 15,
+    SK_Enter = 15
+};
+
 typedef struct
 {
     uint8_t pressedKey;
