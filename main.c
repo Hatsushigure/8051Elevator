@@ -100,19 +100,25 @@ void getMaxPerson()
     Keyboard_getKey(&keyboard);
     if (keyboard.state != Released)
         return;
-    if (maxPersonInput.currentIndex == 3)
+    if (keyboard.releasedKey == SK_Enter)
     {
-        if (keyboard.releasedKey == SK_Enter)
-        {
-            workState = WS_Weight;
-            for (; i < 8; i++)
-                displayBuffer[i] = weightPrompt[i];
-        }
-    } else
-    {
-        displayBuffer[2 + maxPersonInput.currentIndex] = castTable[keyboard.releasedKey];
-        MaxPersonInput_append(&maxPersonInput, keyboard.releasedKey);
+        workState = WS_Weight;
+        for (; i < 8; i++)
+            displayBuffer[i] = weightPrompt[i];
+        return;
     }
+    if (keyboard.releasedKey == SK_Backspace)
+    {
+        displayBuffer[2 + maxPersonInput.currentIndex] = DS_Disabled;
+        MaxPersonInput_backspace(&maxPersonInput);
+        return;
+    }
+    if (maxPersonInput.currentIndex == 3)
+        return;
+    if (keyboard.releasedKey >= 10)
+        return;
+    displayBuffer[2 + maxPersonInput.currentIndex] = castTable[keyboard.releasedKey];
+    MaxPersonInput_append(&maxPersonInput, keyboard.releasedKey);
 }
 
 void varifyPassword()

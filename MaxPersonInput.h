@@ -14,6 +14,7 @@ extern MaxPersonInput maxPersonInput;
 
 void MaxPersonInput_init(MaxPersonInput* self);
 void MaxPersonInput_append(MaxPersonInput* self, uint8_t key);
+void MaxPersonInput_backspace(MaxPersonInput* self);
 uint8_t MaxPersonInput_getPersonCount(MaxPersonInput* self);
 
 #endif // __PERSON_INPUT_H__
