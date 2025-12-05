@@ -4,10 +4,8 @@ PasswordInput passwordInput;
 
 void PasswordInput_init(PasswordInput* self)
 {
-    uint8_t i = 0;
-    self->currentIndex = 0;
-    for (; i < 6; i++)
-        self->passwordInput[i] = 0xFF;
+    self->trialLeft = 5;
+    PasswordInput_clear(self);
 }
 
 void PasswordInput_append(PasswordInput* self, uint8_t key)
@@ -22,4 +20,12 @@ void PasswordInput_backspace(PasswordInput* self)
         return;
     self->currentIndex--;
     self->passwordInput[self->currentIndex] = 0xFF;
+}
+
+void PasswordInput_clear(PasswordInput* self)
+{
+    uint8_t i = 0;
+    self->currentIndex = 0;
+    for (; i < 6; i++)
+        self->passwordInput[i] = 0xFF;
 }

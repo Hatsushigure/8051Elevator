@@ -16,6 +16,7 @@ enum WorkState
 {
     WS_GetPassword,
     WS_VarifyPassword,
+    WS_PasswordWrong,
     WS_Person,
     WS_Weight
 };
@@ -31,10 +32,12 @@ uint8_t errorPrompt[] = {DC_E, DC_R, DC_R, DC_O, DC_R, DS_Disabled, DS_Disabled,
 uint8_t weightPrompt[] = {
     DC_R, DC_L& DS_Dot, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled, DS_Disabled
 };
+uint8_t wrongPasswordDelayTime = 100;
 
 void getPassword();
 void getMaxPerson();
 void varifyPassword();
+void wrongPasswordDelay();
 
 int main()
 {
@@ -56,6 +59,9 @@ void onTimer0Timeout() INTERRUPT(1)
         break;
     case WS_VarifyPassword:
         varifyPassword();
+        break;
+    case WS_PasswordWrong:
+        wrongPasswordDelay();
         break;
     case WS_Person:
         getMaxPerson();
@@ -126,6 +132,8 @@ void varifyPassword()
     uint8_t i = 0;
     bit passwordIsCorrect = 1;
     uint8_t* targetPrompt;
+    passwordInput.trialLeft--;
+    errorPrompt[7] = castTable[passwordInput.trialLeft];
     for (; i < 6; i++)
     {
         if (passwordInput.passwordInput[i] != truePassword[i])
@@ -135,8 +143,11 @@ void varifyPassword()
         }
     }
     if (!passwordIsCorrect)
+    {
         targetPrompt = errorPrompt;
-    else
+        wrongPasswordDelayTime = 100;
+        workState = WS_PasswordWrong;
+    } else
     {
         workState = WS_Person;
         targetPrompt = personPrompt;
@@ -144,4 +155,20 @@ void varifyPassword()
     resetDelayDisappear();
     for (i = 0; i < 8; i++)
         displayBuffer[i] = targetPrompt[i];
+}
+
+void wrongPasswordDelay()
+{
+    uint8_t i = 0;
+    if (passwordInput.trialLeft == 0)
+        return;
+    if (wrongPasswordDelayTime == 0)
+    {
+        for (; i < 8; i++)
+            displayBuffer[i] = DS_Disabled;
+        PasswordInput_clear(&passwordInput);
+        workState = WS_GetPassword;
+        return;
+    }
+    wrongPasswordDelayTime--;
 }
