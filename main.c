@@ -22,30 +22,6 @@ enum WorkState
     WS_Free
 };
 
-void getContent(
-    uint8_t contentLength,
-    uint8_t promptLength,
-    const uint8_t code* nextPrompt,
-    uint8_t nextPromptSize,
-    uint8_t nextState,
-    bit isPassword
-);
-#define getPassword()                                                                              \
-    {                                                                                              \
-        getContent(6, 0, 0, 0, WS_VarifyPassword, 1);                                              \
-    }
-#define getMaxPerson()                                                                             \
-    {                                                                                              \
-        getContent(3, 2, weightPrompt, 2, WS_GetMaxWeight, 0);                                     \
-    }
-#define getMaxWeight()                                                                             \
-    {                                                                                              \
-        getContent(3, 2, finishPrompt, 6, WS_Finish, 0);                                           \
-    }
-void varifyPassword();
-void wrongPasswordDelay();
-void finishDelay();
-
 const uint8_t code castTable[] = {
     DC_0, DC_1, DC_2, DC_3, DC_4, DC_5, DC_6, DC_7, DC_8, DC_9, DC_A, DC_B, DC_C, DC_D, DC_E, DC_F
 };
@@ -66,6 +42,32 @@ uint8_t finishDelayTime = 80;
 uint8_t maxPerson;
 uint8_t maxWeight;
 uint8_t workState;
+
+void getContent(
+    uint8_t contentLength,
+    uint8_t promptLength,
+    const uint8_t code* nextPrompt,
+    uint8_t nextPromptSize,
+    uint8_t nextState,
+    bit isPassword
+);
+#define getPassword()                                                                              \
+    {                                                                                              \
+        getContent(6, 0, 0, 0, WS_VarifyPassword, 1);                                              \
+    }
+#define getMaxPerson()                                                                             \
+    {                                                                                              \
+        getContent(3, 2, weightPrompt, 2, WS_GetMaxWeight, 0);                                     \
+        maxWeight = numberInput.result;                                                            \
+    }
+#define getMaxWeight()                                                                             \
+    {                                                                                              \
+        getContent(3, 2, finishPrompt, 6, WS_Finish, 0);                                           \
+        maxPerson = numberInput.result;                                                            \
+    }
+void varifyPassword();
+void wrongPasswordDelay();
+void finishDelay();
 
 int main()
 {
@@ -180,7 +182,7 @@ void getContent(
         return;
     if (keyboard.releasedKey == SK_Enter)
     {
-        maxWeight = NumberInput_getNumber(&numberInput);
+        numberInput.result = NumberInput_getNumber(&numberInput);
         if (!isPassword)
             NumberInput_clear(&numberInput);
         workState = nextState;
