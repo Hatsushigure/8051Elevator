@@ -8,7 +8,7 @@
 void init()
 {
     initTimer();
-    Display_init(&display);
+    Display_init();
     Keyboard_init(&keyboard);
     NumberInput_init(&numberInput);
 }

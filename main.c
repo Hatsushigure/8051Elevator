@@ -27,7 +27,7 @@ const uint8_t code castTable[] = {
 };
 
 // Prompts and Password
-const uint8_t code truePassword[] = {1, 1, 4, 5, 1, 4};
+const uint8_t code correctPassword[] = {1, 1, 4, 5, 1, 4};
 const uint8_t code personPrompt[] = {DC_N, DC_O& DS_Dot};
 const uint8_t code weightPrompt[] = {DC_R, DC_L& DS_Dot};
 const uint8_t code finishPrompt[] = {DC_F, DC_1, DC_N, DC_1, DC_5, DC_H};
@@ -104,22 +104,23 @@ void onTimer0Timeout() INTERRUPT(1)
     case WS_Free:
         break;
     }
-    Display_refreshDisplay(&display);
+    Display_refreshDisplay();
     EA = 1;
 }
 
 void varifyPassword()
 {
-    uint8_t i = 0;
+    uint8_t i = 6;
     bit passwordIsCorrect = 1;
     passwordTrialCount--;
     if (numberInput.currentIndex != 6)
         passwordIsCorrect = 0;
     else
     {
-        for (; i != 6; i++)
+        while (i)
         {
-            if (numberInput.inputBuffer[i] != truePassword[i])
+            i--;
+            if (numberInput.inputBuffer[i] != correctPassword[i])
             {
                 passwordIsCorrect = 0;
                 break;
@@ -128,17 +129,17 @@ void varifyPassword()
     }
     if (!passwordIsCorrect)
     {
-        Display_setPrompt(&display, errorPrompt, 5);
+        Display_setPrompt(errorPrompt, 5);
         display.displayBuffer[7] = castTable[passwordTrialCount];
         wrongPasswordDelayTime = 100;
         workState = WS_PasswordWrong;
     } else
     {
-        Display_setPrompt(&display, personPrompt, 2);
+        Display_setPrompt(personPrompt, 2);
         NumberInput_clear(&numberInput);
         workState = WS_GetMaxPerson;
     }
-    Display_resetDelayDisappear(&display);
+    Display_resetDelayDisappear();
 }
 
 void wrongPasswordDelay()
@@ -147,7 +148,7 @@ void wrongPasswordDelay()
         return;
     if (wrongPasswordDelayTime == 0)
     {
-        Display_clear(&display);
+        Display_clear();
         NumberInput_clear(&numberInput);
         workState = WS_GetPassword;
         return;
@@ -160,7 +161,7 @@ void finishDelay()
     if (finishDelayTime == 0)
     {
         // Finish delay over, clear screen and enter idle state
-        Display_clear(&display);
+        Display_clear();
         workState = WS_Free;
     }
     finishDelayTime--;
@@ -175,7 +176,7 @@ void getContent(
     bit isPassword
 )
 {
-    Display_promptInput(&display, promptLength + numberInput.currentIndex);
+    Display_promptInput(promptLength + numberInput.currentIndex);
     Keyboard_getKey(&keyboard);
     if (keyboard.state != Released)
         return;
@@ -185,7 +186,7 @@ void getContent(
         if (!isPassword)
             NumberInput_clear(&numberInput);
         workState = nextState;
-        Display_setPrompt(&display, nextPrompt, nextPromptSize);
+        Display_setPrompt(nextPrompt, nextPromptSize);
         return;
     }
     if (keyboard.releasedKey == SK_Backspace)
@@ -201,6 +202,6 @@ void getContent(
     display.displayBuffer[promptLength + numberInput.currentIndex] =
         castTable[keyboard.releasedKey];
     if (isPassword)
-        Display_delayDisappear(&display, promptLength + numberInput.currentIndex, 50);
+        Display_delayDisappear(promptLength + numberInput.currentIndex, 50);
     NumberInput_append(&numberInput, keyboard.releasedKey);
 }

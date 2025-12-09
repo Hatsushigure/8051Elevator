@@ -53,13 +53,13 @@ typedef struct
 
 extern Display display;
 
-void Display_init(Display* self);
+void Display_init();
 void Display_displayCharacter(uint8_t item, uint8_t index);
-void Display_refreshDisplay(Display* self);
-void Display_promptInput(Display* self, uint8_t index);
-#define Display_delayDisappear(self, index, time) (self)->disappearCounter[index] = time;
-void Display_resetDelayDisappear(Display* self);
-void Display_clear(Display* self);
-void Display_setPrompt(Display* self, uint8_t* prompt, uint8_t size);
+void Display_refreshDisplay();
+void Display_promptInput(uint8_t index);
+#define Display_delayDisappear(index, time) display.disappearCounter[index] = time;
+void Display_resetDelayDisappear();
+void Display_clear();
+void Display_setPrompt(uint8_t* prompt, uint8_t size);
 
 #endif // __DISPLAY_H__
