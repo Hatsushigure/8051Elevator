@@ -31,7 +31,7 @@ const uint8_t code correctPassword[] = {1, 1, 4, 5, 1, 4};
 const uint8_t code personPrompt[] = {DC_N, DC_O& DS_Dot};
 const uint8_t code weightPrompt[] = {DC_R, DC_L& DS_Dot};
 const uint8_t code finishPrompt[] = {DC_F, DC_1, DC_N, DC_1, DC_5, DC_H};
-const uint8_t code errorPrompt[] = {DC_E, DC_R, DC_R, DC_O, DC_R};
+const uint8_t code errorPrompt[] = {DC_E, DC_R, DC_R};
 
 // State machine variables
 uint8_t workState;
@@ -129,7 +129,7 @@ void varifyPassword()
     }
     if (!passwordIsCorrect)
     {
-        Display_setPrompt(errorPrompt, 5);
+        Display_setPrompt(errorPrompt, 3);
         display.displayBuffer[5] = castTable[passwordTrialCount];
         wrongPasswordDelayTime = 100;
         workState = WS_PasswordWrong;
