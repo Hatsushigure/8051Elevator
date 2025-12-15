@@ -1,6 +1,5 @@
 #include "keyboard.h"
 #include "utils.h"
-#include <reg51.h>
 
 Keyboard keyboard;
 

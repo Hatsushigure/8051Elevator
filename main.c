@@ -3,7 +3,6 @@
 #include "initialize.h"
 #include "keyboard.h"
 #include "utils.h"
-#include <reg51.h>
 
 #ifdef __VSCODE_C51__
 #define INTERRUPT(x)

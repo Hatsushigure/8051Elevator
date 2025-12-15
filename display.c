@@ -1,6 +1,5 @@
 #include "display.h"
 #include "utils.h"
-#include <reg51.h>
 
 Display display;
 

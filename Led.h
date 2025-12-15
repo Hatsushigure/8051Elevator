@@ -3,8 +3,19 @@
 
 #include "utils.h"
 
-void Led_turnOn(uint8_t index);
-void Led_turnOff(uint8_t index);
-void Led_toggle(uint8_t index);
+#define Led_init()                                                                                 \
+    {                                                                                              \
+        P3 = 0x00;                                                                                 \
+    }
 
-#endif // __LEF_H__
+#define Led_allOn()                                                                                \
+    {                                                                                              \
+        P3 = 0xFF;                                                                                 \
+    }
+
+#define Led_allOff()                                                                               \
+    {                                                                                              \
+        P3 = 0x00;                                                                                 \
+    }
+
+#endif // __LED_H__

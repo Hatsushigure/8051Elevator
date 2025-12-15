@@ -1,12 +1,15 @@
 #ifndef __INITIALIZE_H__
 #define __INITIALIZE_H__
 
+#include "utils.h"
+
 void init();
 #define initPin()                                                                                  \
     {                                                                                              \
         P0MDOUT = 0xFF;                                                                            \
         P1MDOUT = 0xFF;                                                                            \
         P2MDOUT = 0xFF;                                                                            \
+        P3MDOUT = 0xFF;                                                                            \
         XBR2 = 0x40;                                                                               \
     }
 #define initWatchdog()                                                                             \

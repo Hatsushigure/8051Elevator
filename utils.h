@@ -1,6 +1,8 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include <c8051F020.h>
+
 #define shortDelay(time) while (time--);
 
 typedef unsigned char uint8_t;

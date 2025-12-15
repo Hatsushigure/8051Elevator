@@ -397,11 +397,6 @@
               <FilePath>.\keyboard.c</FilePath>
             </File>
             <File>
-              <FileName>Led.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Led.c</FilePath>
-            </File>
-            <File>
               <FileName>NumberInput.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\NumberInput.c</FilePath>
