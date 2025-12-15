@@ -6,7 +6,7 @@
 typedef struct
 {
     uint8_t currentIndex;
-    uint8_t inputBuffer[8];
+    uint8_t inputBuffer[6];
     uint8_t result;
 } NumberInput;
 

@@ -3,22 +3,14 @@
 #include "NumberInput.h"
 #include "display.h"
 #include "utils.h"
-#include <reg51.h>
+#include <c8051F020.h>
 
 void init()
 {
-    initTimer();
+    initWatchdog();
+    initPin();
     Display_init();
     Keyboard_init();
     NumberInput_init();
-}
-
-void initTimer()
-{
-    TMOD |= 0x01;            // Timer 0 16 bit
-    TH0 = (-10000) / 0x0100; // 10 ms in 12MHz
-    TL0 = (-10000) % 0x0100;
-    EA = 1;
-    ET0 = 1;
-    TR0 = 1;
+    initTimer();
 }

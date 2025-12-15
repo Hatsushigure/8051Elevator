@@ -15,18 +15,17 @@ void Display_init()
 void Display_displayCharacter(uint8_t item, uint8_t index)
 {
     uint8_t delayTime = 100;
-    P2 = 0;
-    P0 = DS_Disabled;
-    P2 = index;
+    P2 = ~index;
     P0 = item;
     shortDelay(delayTime);
+	  P2 = 0xFF;
 }
 
 void Display_refreshDisplay()
 {
     uint8_t currentDigit = 0x01;
     uint8_t i = 0;
-    for (; i != 8; i++)
+    for (; i != 6; i++)
     {
         if (display.disappearCounter[i] == 0)
             display.displayBuffer[i] = DS_Middle;
@@ -51,7 +50,7 @@ void Display_promptInput(uint8_t index)
 
 void Display_resetDelayDisappear()
 {
-    uint8_t i = 8;
+    uint8_t i = 6;
     while (i)
     {
         i--;
@@ -61,7 +60,7 @@ void Display_resetDelayDisappear()
 
 void Display_clear()
 {
-    uint8_t i = 8;
+    uint8_t i = 6;
     while (i)
     {
         i--;

@@ -79,8 +79,8 @@ int main()
 void onTimer0Timeout() INTERRUPT(1)
 {
     EA = 0;
-    TH0 = (-10000) / 0x0100; // 10 ms in 12MHz
-    TL0 = (-10000) % 0x0100;
+    TH0 = (-20000) / 0x0100; // 10 ms in 2MHz
+    TL0 = (-20000) % 0x0100;
     switch (workState)
     {
     case WS_GetPassword:
@@ -130,7 +130,7 @@ void varifyPassword()
     if (!passwordIsCorrect)
     {
         Display_setPrompt(errorPrompt, 5);
-        display.displayBuffer[7] = castTable[passwordTrialCount];
+        display.displayBuffer[5] = castTable[passwordTrialCount];
         wrongPasswordDelayTime = 100;
         workState = WS_PasswordWrong;
     } else

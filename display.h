@@ -45,10 +45,10 @@ enum DisplayCharacter
 
 typedef struct
 {
-    uint8_t displayBuffer[8];
+    uint8_t displayBuffer[6];
     uint8_t promptCount;
     uint8_t currentPromptValue;
-    int8_t disappearCounter[8];
+    int8_t disappearCounter[6];
 } Display;
 
 extern Display display;

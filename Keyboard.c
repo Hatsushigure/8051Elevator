@@ -7,7 +7,7 @@ Keyboard keyboard;
 void Keyboard_getKey()
 {
     uint8_t currentKey = 0xFF;
-    uint8_t rowMask = 0x01;
+    uint8_t rowMask = 0x08;
     uint8_t colMask = 0x10;
     uint8_t row = 0;
     uint8_t col = 0;
@@ -17,7 +17,7 @@ void Keyboard_getKey()
         P1 = ~rowMask;
         if (P1 != ~rowMask)
             break;
-        rowMask <<= 1;
+        rowMask >>= 1;
     }
     for (; col != 4; col++)
     {
