@@ -1,4 +1,5 @@
 #include "initialize.h"
+#include "Joystick.h"
 #include "Keyboard.h"
 #include "Led.h"
 #include "NumberInput.h"
@@ -12,6 +13,7 @@ void init()
     Led_init();
     Display_init();
     Keyboard_init();
+    Joystick_init();
     NumberInput_init();
     initTimer();
 }

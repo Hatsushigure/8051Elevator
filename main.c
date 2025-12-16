@@ -1,3 +1,4 @@
+#include "Joystick.h"
 #include "NumberInput.h"
 #include "display.h"
 #include "initialize.h"
@@ -101,6 +102,18 @@ void onTimer0Timeout() INTERRUPT(1)
         finishDelay();
         break;
     case WS_Free:
+        break;
+    }
+    Joystick_getKey();
+    switch (joystick.releasedKey)
+    {
+    case SK_Up:
+        display.displayBuffer[5] = DC_U;
+        break;
+    case SK_Down:
+        display.displayBuffer[5] = DC_D;
+        break;
+    default:
         break;
     }
     Display_refreshDisplay();
