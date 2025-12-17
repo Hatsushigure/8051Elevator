@@ -406,6 +406,11 @@
               <FileType>1</FileType>
               <FilePath>.\Joystick.c</FilePath>
             </File>
+            <File>
+              <FileName>ElevatorControl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ElevatorControl.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

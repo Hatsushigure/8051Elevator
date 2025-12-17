@@ -1,3 +1,4 @@
+#include "ElevatorControl.h"
 #include "Joystick.h"
 #include "NumberInput.h"
 #include "display.h"
@@ -11,7 +12,7 @@
 #define INTERRUPT(x) interrupt x
 #endif
 
-enum WorkState
+typedef enum
 {
     WS_GetPassword,
     WS_VarifyPassword,
@@ -21,14 +22,7 @@ enum WorkState
     WS_Finish,
     WS_GetElevatorControl,
     WS_Free
-};
-
-enum ElevatorRunState
-{
-    ERS_Idle,
-    ERS_MovingUp,
-    ERS_MovingDown
-};
+} WorkState;
 
 const uint8_t code castTable[] = {DC_0,        DC_1, DC_2,        DC_3,
                                   DC_4,        DC_5, DC_6,        DC_7,
@@ -43,13 +37,12 @@ const uint8_t code weightPrompt[] = {DC_R, DC_L& DS_Dot};
 const uint8_t code finishPrompt[] = {DC_F, DC_1, DC_N, DC_1, DC_5, DC_H};
 const uint8_t code errorPrompt[] = {DC_E, DC_R, DC_R};
 
-uint8_t workState;
+WorkState workState;
 uint8_t passwordTrialCount = 5;
 uint8_t wrongPasswordDelayTime;
 uint8_t finishDelayTime = 80;
 uint8_t maxPerson;
 uint8_t maxWeight;
-bit upDownState; // 0 for up, 1 for down
 
 void getContent(
     uint8_t contentLength,
@@ -117,6 +110,8 @@ void onTimer0Timeout() INTERRUPT(1)
         break;
     case WS_GetElevatorControl:
         getElevatorControl();
+        ElevatorControl_makeRequest(7, FR_Inside);
+        ElevatorControl_move();
         break;
     case WS_Free:
         break;

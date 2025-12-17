@@ -4,6 +4,7 @@
 #include "Led.h"
 #include "NumberInput.h"
 #include "display.h"
+#include "ElevatorControl.h"
 #include "utils.h"
 
 void init()
@@ -15,5 +16,6 @@ void init()
     Keyboard_init();
     Joystick_init();
     NumberInput_init();
+    ElevatorControl_init();
     initTimer();
 }
