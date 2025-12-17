@@ -5,10 +5,10 @@
 
 enum SpecialKey_1
 {
-    SK_Right = 17,
-    SK_Down = 18,
-    SK_Left = 19,
-    SK_Up = 20
+    SK_Right = 16,
+    SK_Down = 17,
+    SK_Left = 18,
+    SK_Up = 19
 };
 
 enum JoystickMask
@@ -27,10 +27,10 @@ typedef struct
 
 extern Joystick joystick;
 
-#define Joystick_init()                                                                            \
-    {                                                                                              \
-        joystick.releasedKey = 0xFF;                                                               \
-        joystick.lastKeyState = 0xFF;                                                              \
+#define Joystick_init()                                                        \
+    {                                                                          \
+        joystick.releasedKey = 0xFF;                                           \
+        joystick.lastKeyState = 0xFF;                                          \
     }
 void Joystick_getKey();
 

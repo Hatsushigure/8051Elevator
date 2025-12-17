@@ -19,12 +19,22 @@ enum WorkState
     WS_GetMaxPerson,
     WS_GetMaxWeight,
     WS_Finish,
+    WS_GetElevatorControl,
     WS_Free
 };
 
-const uint8_t code castTable[] = {
-    DC_0, DC_1, DC_2, DC_3, DC_4, DC_5, DC_6, DC_7, DC_8, DC_9, DC_A, DC_B, DC_C, DC_D, DC_E, DC_F
+enum ElevatorRunState
+{
+    ERS_Idle,
+    ERS_MovingUp,
+    ERS_MovingDown
 };
+
+const uint8_t code castTable[] = {DC_0,        DC_1, DC_2,        DC_3,
+                                  DC_4,        DC_5, DC_6,        DC_7,
+                                  DC_8,        DC_9, DS_Middle,   DC_B,
+                                  DC_C,        DC_D, DC_E,        DC_F,
+                                  DS_Disabled, DC_D, DS_Disabled, DC_U};
 
 // Prompts and Password
 const uint8_t code correctPassword[] = {1, 1, 4, 5, 1, 4};
@@ -33,14 +43,13 @@ const uint8_t code weightPrompt[] = {DC_R, DC_L& DS_Dot};
 const uint8_t code finishPrompt[] = {DC_F, DC_1, DC_N, DC_1, DC_5, DC_H};
 const uint8_t code errorPrompt[] = {DC_E, DC_R, DC_R};
 
-// State machine variables
 uint8_t workState;
 uint8_t passwordTrialCount = 5;
 uint8_t wrongPasswordDelayTime;
 uint8_t finishDelayTime = 80;
 uint8_t maxPerson;
 uint8_t maxWeight;
-uint8_t workState;
+bit upDownState; // 0 for up, 1 for down
 
 void getContent(
     uint8_t contentLength,
@@ -48,21 +57,26 @@ void getContent(
     const uint8_t code* nextPrompt,
     uint8_t nextPromptSize,
     uint8_t nextState,
-    bit isPassword
+    bit isPassword,
+    bit isElevatorControl
 );
-#define getPassword()                                                                              \
-    {                                                                                              \
-        getContent(6, 0, 0, 0, WS_VarifyPassword, 1);                                              \
+#define getPassword()                                                          \
+    {                                                                          \
+        getContent(6, 0, 0, 0, WS_VarifyPassword, 1, 0);                       \
     }
-#define getMaxPerson()                                                                             \
-    {                                                                                              \
-        getContent(3, 2, weightPrompt, 2, WS_GetMaxWeight, 0);                                     \
-        maxWeight = numberInput.result;                                                            \
+#define getMaxPerson()                                                         \
+    {                                                                          \
+        getContent(3, 2, weightPrompt, 2, WS_GetMaxWeight, 0, 0);              \
+        maxWeight = numberInput.result;                                        \
     }
-#define getMaxWeight()                                                                             \
-    {                                                                                              \
-        getContent(3, 2, finishPrompt, 6, WS_Finish, 0);                                           \
-        maxPerson = numberInput.result;                                                            \
+#define getMaxWeight()                                                         \
+    {                                                                          \
+        getContent(3, 2, finishPrompt, 6, WS_Finish, 0, 0);                    \
+        maxPerson = numberInput.result;                                        \
+    }
+#define getElevatorControl()                                                   \
+    {                                                                          \
+        getContent(3, 0, 0, 0, WS_Free, 0, 1);                                 \
     }
 void varifyPassword();
 void wrongPasswordDelay();
@@ -101,19 +115,10 @@ void onTimer0Timeout() INTERRUPT(1)
     case WS_Finish:
         finishDelay();
         break;
+    case WS_GetElevatorControl:
+        getElevatorControl();
+        break;
     case WS_Free:
-        break;
-    }
-    Joystick_getKey();
-    switch (joystick.releasedKey)
-    {
-    case SK_Up:
-        display.displayBuffer[5] = DC_U;
-        break;
-    case SK_Down:
-        display.displayBuffer[5] = DC_D;
-        break;
-    default:
         break;
     }
     Display_refreshDisplay();
@@ -172,9 +177,8 @@ void finishDelay()
 {
     if (finishDelayTime == 0)
     {
-        // Finish delay over, clear screen and enter idle state
         Display_clear();
-        workState = WS_Free;
+        workState = WS_GetElevatorControl;
     }
     finishDelayTime--;
 }
@@ -185,17 +189,28 @@ void getContent(
     const uint8_t code* nextPrompt,
     uint8_t nextPromptSize,
     uint8_t nextState,
-    bit isPassword
+    bit isPassword,
+    bit isElevatorControl
 )
 {
     Display_promptInput(promptLength + numberInput.currentIndex);
     Keyboard_getKey();
+    if (isElevatorControl && !numberInput.currentIndex)
+    {
+        Joystick_getKey();
+        if (joystick.releasedKey == SK_Up || joystick.releasedKey == SK_Down)
+        {
+            NumberInput_append(joystick.releasedKey);
+            display.displayBuffer[0] = castTable[joystick.releasedKey];
+            return;
+        }
+    }
     if (keyboard.state != KS_Released)
         return;
     if (keyboard.releasedKey == SK_Enter)
     {
         numberInput.result = NumberInput_getNumber();
-        if (!isPassword)
+        if (!isPassword && !isElevatorControl)
             NumberInput_clear();
         workState = nextState;
         Display_setPrompt(nextPrompt, nextPromptSize);
@@ -203,13 +218,14 @@ void getContent(
     }
     if (keyboard.releasedKey == SK_Backspace)
     {
-        display.displayBuffer[promptLength + numberInput.currentIndex] = DS_Disabled;
+        display.displayBuffer[promptLength + numberInput.currentIndex] =
+            DS_Disabled;
         NumberInput_backspace();
         return;
     }
     if (numberInput.currentIndex == contentLength)
         return;
-    if (keyboard.releasedKey >= 10)
+    if (keyboard.releasedKey > (9 + (uint8_t)isElevatorControl))
         return;
     display.displayBuffer[promptLength + numberInput.currentIndex] =
         castTable[keyboard.releasedKey];

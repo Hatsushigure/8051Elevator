@@ -4,7 +4,7 @@ Joystick joystick;
 
 void Joystick_getKey()
 {
-    uint8_t currentKeyState = P4 & 0xFF;
+    uint8_t currentKeyState = P4 & 0x0F;
     uint8_t releaseState = (~joystick.lastKeyState) & currentKeyState;
     uint8_t key = SK_Right;
     uint8_t mask = 0x01;
