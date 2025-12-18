@@ -18,11 +18,20 @@ typedef enum
     FR_Inside = 0x04
 } FloorRequest;
 
+typedef enum
+{
+    EDS_Closed,
+    EDS_Closing,
+    EDS_Open
+} ElevatorDoorState;
+
 typedef struct
 {
     ElevatorRunState runState;
+    ElevatorDoorState doorState;
     uint8_t currentFloor;
-    uint8_t requestBitmap[10];
+    uint8_t targetFloor;
+    uint8_t requestBitmap[12];
 } ElevatorControl;
 
 extern ElevatorControl elevatorControl;
@@ -31,8 +40,9 @@ extern ElevatorControl elevatorControl;
     {                                                                          \
         uint8_t i = 0;                                                         \
         elevatorControl.runState = ERS_Idle;                                   \
+        elevatorControl.doorState = EDS_Closed;                                \
         elevatorControl.currentFloor = 0;                                      \
-        for (; i != 10; i++)                                                   \
+        for (; i != 12; i++)                                                   \
             elevatorControl.requestBitmap[i] = 0;                              \
     }
 void ElevatorControl_makeRequest(int8_t floor, FloorRequest request);

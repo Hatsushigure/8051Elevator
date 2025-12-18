@@ -45,6 +45,7 @@ enum DisplayCharacter
     DC_L = DS_Bottom & DS_BottomLeft & DS_TopLeft,
     DC_N = DS_TopRight & DS_BottomRight & DS_BottomLeft & DS_TopLeft & DS_Top,
     DC_O = DS_BottomRight & DS_Bottom & DS_BottomLeft & DS_Middle,
+    DC_P = DS_Top & DS_TopRight & DS_BottomLeft & DS_TopLeft & DS_Middle,
     DC_U = DS_TopRight & DS_BottomRight & DS_Bottom & DS_BottomLeft & DS_TopLeft
 };
 
