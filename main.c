@@ -296,7 +296,18 @@ void processElevatorControl()
     if (numberInput.inputBuffer[0] >= SK_Right)
         isExternalRequest = 1;
     floor = numberInput.inputBuffer[(uint8_t)isExternalRequest + 1];
-    if (numberInput.inputBuffer[0] == SK_Up)
+    if ((floor == elevatorControl.currentFloorIndex) &&
+        (elevatorControl.doorState != EDS_Closed))
+    {
+        elevatorOpenDoorCounter = ElevatorOpenDoorCounterDefault;
+        elevatorCloseDoorCounter = ElevatorCloseDoorCounterDefault;
+        elevatorDoorTextBlinkCounter = ElevatorDoorTextBlinkCounterDefault;
+        elevatorDoorTextVisible = 1;
+        elevatorControl.doorState = EDS_Open;
+        NumberInput_clear();
+        workState = WS_GetElevatorControl;
+        return;
+    } else if (numberInput.inputBuffer[0] == SK_Up)
         ElevatorControl_makeRequest(floor, FR_Up);
     else if (numberInput.inputBuffer[0] == SK_Down)
         ElevatorControl_makeRequest(floor, FR_Down);
