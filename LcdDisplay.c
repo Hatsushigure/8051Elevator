@@ -32,12 +32,10 @@ void LcdDisplay_init()
 void LcdDisplay_sendCommand(uint8_t command)
 {
     uint8_t dly = 10;
-    shortDelay(dly);
     LcdDataPort = command;
     clearRsPin();
     clearRwPin();
     setEnPin();
-    dly = 10;
     shortDelay(dly);
     clearEnPin();
 }
@@ -45,12 +43,10 @@ void LcdDisplay_sendCommand(uint8_t command)
 void LcdDisplay_sendData(char payload)
 {
     uint8_t dly = 10;
-    shortDelay(dly);
     LcdDataPort = payload;
     setRsPin();
     clearRwPin();
     setEnPin();
-    dly = 10;
     shortDelay(dly);
     clearEnPin();
 }
@@ -58,5 +54,12 @@ void LcdDisplay_sendData(char payload)
 void LcdDisplay_sendString(const char* str, uint8_t length)
 {
     while (length--)
-        LcdDisplay_sendData(*str++);
+        LcdDisplay_sendData(*(str++));
 }
+
+void LcdDisplay_sendEmptyString(uint8_t length)
+{
+    while (length--)
+        LcdDisplay_sendData(' ');
+}
+

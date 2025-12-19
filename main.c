@@ -37,8 +37,8 @@ const uint8_t code personPrompt[] = {DC_N, DC_O& DS_Dot};
 const uint8_t code weightPrompt[] = {DC_R, DC_L& DS_Dot};
 const uint8_t code finishPrompt[] = {DC_F, DC_1, DC_N, DC_1, DC_5, DC_H};
 const uint8_t code errorPrompt[] = {DC_E, DC_R, DC_R};
-const uint8_t code openDoorPrompt[] = "OP";
-const uint8_t code closeDoorPrompt[] = "CL";
+const uint8_t code openDoorPrompt[] = "OP ";
+const uint8_t code closeDoorPrompt[] = "CL   ";
 #define ElevatorDoorTextBlinkCounterDefault 25
 #define ElevatorOpenDoorCounterDefault 10
 #define ElevatorCloseDoorCounterDefault 4
@@ -153,7 +153,6 @@ void onTimer1Timeout() INTERRUPT(3)
         elevatorMoveCounter = ElevatorMoveCounterDefault;
         ElevatorControl_move();
     }
-    LcdDisplay_fastClearLine(0);
     LcdDisplay_setCursorPos(0x40);
     myItoa(
         ElevatorControl_indexToFloor(elevatorControl.currentFloorIndex),
@@ -163,12 +162,11 @@ void onTimer1Timeout() INTERRUPT(3)
     if (elevatorControl.doorState == EDS_Open)
     {
         Led_allOff();
+        LcdDisplay_setCursorPos(0);
         if (elevatorDoorTextVisible)
-        {
-            LcdDisplay_setCursorPos(5);
-            LcdDisplay_sendString(openDoorPrompt, 2);
-        }
-        LcdDisplay_setCursorPos(8);
+            LcdDisplay_sendString(openDoorPrompt, 3);
+        else
+            LcdDisplay_sendEmptyString(3);
         myItoa(
             ElevatorControl_indexToFloor(elevatorControl.currentFloorIndex),
             floorStr
@@ -190,11 +188,11 @@ void onTimer1Timeout() INTERRUPT(3)
         }
     } else if (elevatorControl.doorState == EDS_Closing)
     {
+        LcdDisplay_setCursorPos(0);
         if (elevatorDoorTextVisible)
-        {
-            LcdDisplay_setCursorPos(5);
-            LcdDisplay_sendString(closeDoorPrompt, 2);
-        }
+            LcdDisplay_sendString(closeDoorPrompt, 5);
+        else
+            LcdDisplay_sendEmptyString(5);
         elevatorDoorTextBlinkCounter--;
         if (elevatorDoorTextBlinkCounter == 0)
         {
@@ -214,7 +212,7 @@ void onTimer1Timeout() INTERRUPT(3)
     {
         if (elevatorControl.runState != ERS_Idle)
         {
-            LcdDisplay_setCursorPos(6);
+            LcdDisplay_setCursorPos(0);
             if (elevatorControl.runState == ERS_MovingUp)
                 LcdDisplay_sendData('^');
             else
@@ -223,8 +221,9 @@ void onTimer1Timeout() INTERRUPT(3)
                 ElevatorControl_indexToFloor(elevatorControl.targetFloorIndex),
                 floorStr
             );
-            LcdDisplay_setCursorPos(8);
+            LcdDisplay_setCursorPos(2);
             LcdDisplay_sendString(floorStr, 2);
+            LcdDisplay_sendData(' ');
         }
     }
     EA = 1;
@@ -360,7 +359,10 @@ void getContent(
     if (isElevatorControl)
     {
         int8_t floor = keyboard.releasedKey + 1;
-        myItoa(ElevatorControl_indexToFloor(floor), (char*)&display.displayBuffer[numberInput.currentIndex]);
+        myItoa(
+            ElevatorControl_indexToFloor(floor),
+            (char*)&display.displayBuffer[numberInput.currentIndex]
+        );
         if (display.displayBuffer[numberInput.currentIndex] == '-')
             display.displayBuffer[numberInput.currentIndex] = DS_Middle;
         else
