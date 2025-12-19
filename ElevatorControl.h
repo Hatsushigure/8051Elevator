@@ -29,8 +29,8 @@ typedef struct
 {
     ElevatorRunState runState;
     ElevatorDoorState doorState;
-    uint8_t currentFloor;
-    uint8_t targetFloor;
+    uint8_t currentFloorIndex;
+    uint8_t targetFloorIndex;
     uint8_t requestBitmap[12];
 } ElevatorControl;
 
@@ -41,11 +41,12 @@ extern ElevatorControl elevatorControl;
         uint8_t i = 0;                                                         \
         elevatorControl.runState = ERS_Idle;                                   \
         elevatorControl.doorState = EDS_Closed;                                \
-        elevatorControl.currentFloor = 0;                                      \
-        for (; i != 12; i++)                                                   \
+        elevatorControl.currentFloorIndex = 3;                                 \
+        for (; i != 11; i++)                                                   \
             elevatorControl.requestBitmap[i] = 0;                              \
     }
-void ElevatorControl_makeRequest(int8_t floor, FloorRequest request);
+void ElevatorControl_makeRequest(int8_t floorIndex, FloorRequest request);
 void ElevatorControl_move();
+int8_t ElevatorControl_indexToFloor(int8_t index);
 
 #endif // __ELEVATOR_CONTROL_H__

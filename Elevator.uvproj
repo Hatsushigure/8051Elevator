@@ -416,6 +416,11 @@
               <FileType>1</FileType>
               <FilePath>.\LcdDisplay.c</FilePath>
             </File>
+            <File>
+              <FileName>utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\utils.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

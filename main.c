@@ -1,5 +1,6 @@
 #include "ElevatorControl.h"
 #include "Joystick.h"
+#include "LcdDisplay.h"
 #include "Led.h"
 #include "NumberInput.h"
 #include "display.h"
@@ -36,8 +37,8 @@ const uint8_t code personPrompt[] = {DC_N, DC_O& DS_Dot};
 const uint8_t code weightPrompt[] = {DC_R, DC_L& DS_Dot};
 const uint8_t code finishPrompt[] = {DC_F, DC_1, DC_N, DC_1, DC_5, DC_H};
 const uint8_t code errorPrompt[] = {DC_E, DC_R, DC_R};
-const uint8_t code openDoorPrompt[] = {DC_O, DC_P};
-const uint8_t code closeDoorPrompt[] = {DC_C, DC_L};
+const uint8_t code openDoorPrompt[] = "OP";
+const uint8_t code closeDoorPrompt[] = "CL";
 #define ElevatorDoorTextBlinkCounterDefault 25
 #define ElevatorOpenDoorCounterDefault 10
 #define ElevatorCloseDoorCounterDefault 4
@@ -85,7 +86,7 @@ void getContent(
     }
 #define getElevatorControl()                                                   \
     {                                                                          \
-        getContent(3, 0, 0, 0, WS_ProcessElevatorControl, 0, 1);               \
+        getContent(2, 0, 0, 0, WS_ProcessElevatorControl, 0, 1);               \
     }
 void varifyPassword();
 void wrongPasswordDelay();
@@ -138,6 +139,7 @@ void onTimer0Timeout() INTERRUPT(1)
 
 void onTimer1Timeout() INTERRUPT(3)
 {
+    char floorStr[2];
     EA = 0;
     refillTimer1();
     if (!configurationComplete)
@@ -151,14 +153,27 @@ void onTimer1Timeout() INTERRUPT(3)
         elevatorMoveCounter = ElevatorMoveCounterDefault;
         ElevatorControl_move();
     }
+    LcdDisplay_fastClearLine(0);
+    LcdDisplay_setCursorPos(0x40);
+    myItoa(
+        ElevatorControl_indexToFloor(elevatorControl.currentFloorIndex),
+        floorStr
+    );
+    LcdDisplay_sendString(floorStr, 2);
     if (elevatorControl.doorState == EDS_Open)
     {
         Led_allOff();
         if (elevatorDoorTextVisible)
-            Display_setPrompt(openDoorPrompt, 2);
-        else
-            Display_clear();
-        display.displayBuffer[5] = castTable[elevatorControl.currentFloor];
+        {
+            LcdDisplay_setCursorPos(5);
+            LcdDisplay_sendString(openDoorPrompt, 2);
+        }
+        LcdDisplay_setCursorPos(8);
+        myItoa(
+            ElevatorControl_indexToFloor(elevatorControl.currentFloorIndex),
+            floorStr
+        );
+        LcdDisplay_sendString(floorStr, 2);
         elevatorDoorTextBlinkCounter--;
         if (elevatorDoorTextBlinkCounter == 0)
         {
@@ -176,9 +191,10 @@ void onTimer1Timeout() INTERRUPT(3)
     } else if (elevatorControl.doorState == EDS_Closing)
     {
         if (elevatorDoorTextVisible)
-            Display_setPrompt(closeDoorPrompt, 2);
-        else
-            Display_clear();
+        {
+            LcdDisplay_setCursorPos(5);
+            LcdDisplay_sendString(closeDoorPrompt, 2);
+        }
         elevatorDoorTextBlinkCounter--;
         if (elevatorDoorTextBlinkCounter == 0)
         {
@@ -198,13 +214,17 @@ void onTimer1Timeout() INTERRUPT(3)
     {
         if (elevatorControl.runState != ERS_Idle)
         {
+            LcdDisplay_setCursorPos(6);
             if (elevatorControl.runState == ERS_MovingUp)
-                display.displayBuffer[0] = DC_U;
+                LcdDisplay_sendData('^');
             else
-                display.displayBuffer[0] = DC_D;
-            display.displayBuffer[1] = DS_Middle;
-            display.displayBuffer[2] = DS_Middle;
-            display.displayBuffer[3] = castTable[elevatorControl.targetFloor];
+                LcdDisplay_sendData('v');
+            myItoa(
+                ElevatorControl_indexToFloor(elevatorControl.targetFloorIndex),
+                floorStr
+            );
+            LcdDisplay_setCursorPos(8);
+            LcdDisplay_sendString(floorStr, 2);
         }
     }
     EA = 1;
@@ -273,21 +293,10 @@ void finishDelay()
 void processElevatorControl()
 {
     bit isExternalRequest = 0;
-    bit isMinus = 0;
     int8_t floor = 0;
     if (numberInput.inputBuffer[0] >= SK_Right)
         isExternalRequest = 1;
-    if (numberInput.inputBuffer[(uint8_t)isExternalRequest] == SK_Minus)
-        isMinus = 1;
-    floor =
-        numberInput.inputBuffer[(uint8_t)isExternalRequest + (uint8_t)isMinus];
-    if (isMinus)
-        floor = -floor;
-    if (floor < -2 || floor > 8)
-    {
-        NumberInput_clear();
-        workState = WS_GetElevatorControl;
-    }
+    floor = numberInput.inputBuffer[(uint8_t)isExternalRequest + 1];
     if (numberInput.inputBuffer[0] == SK_Up)
         ElevatorControl_makeRequest(floor, FR_Up);
     else if (numberInput.inputBuffer[0] == SK_Down)
@@ -295,7 +304,7 @@ void processElevatorControl()
     else
         ElevatorControl_makeRequest(floor, FR_Inside);
     NumberInput_clear();
-    workState = WS_Free;
+    workState = WS_GetElevatorControl;
 }
 
 void getContent(
@@ -333,15 +342,35 @@ void getContent(
     }
     if (keyboard.releasedKey == SK_Backspace)
     {
+        if (isElevatorControl)
+        {
+            display.displayBuffer[promptLength + numberInput.currentIndex] =
+                DS_Disabled;
+            NumberInput_backspace();
+        }
         display.displayBuffer[promptLength + numberInput.currentIndex] =
             DS_Disabled;
         NumberInput_backspace();
         return;
     }
-    if (numberInput.currentIndex == contentLength)
+    if (numberInput.currentIndex >= contentLength)
         return;
-    if (keyboard.releasedKey > (9 + (uint8_t)isElevatorControl))
+    if (keyboard.releasedKey > 9)
         return;
+    if (isElevatorControl)
+    {
+        int8_t floor = keyboard.releasedKey + 1;
+        myItoa(ElevatorControl_indexToFloor(floor), (char*)&display.displayBuffer[numberInput.currentIndex]);
+        if (display.displayBuffer[numberInput.currentIndex] == '-')
+            display.displayBuffer[numberInput.currentIndex] = DS_Middle;
+        else
+            display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
+        display.displayBuffer[numberInput.currentIndex + 1] = castTable
+            [display.displayBuffer[numberInput.currentIndex + 1] - '0'];
+        NumberInput_append(0);
+        NumberInput_append(floor);
+        return;
+    }
     display.displayBuffer[promptLength + numberInput.currentIndex] =
         castTable[keyboard.releasedKey];
     if (isPassword)

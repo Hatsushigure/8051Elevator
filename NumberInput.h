@@ -14,11 +14,13 @@ extern NumberInput numberInput;
 
 #define NumberInput_clear() numberInput.currentIndex = 0;
 #define NumberInput_init() NumberInput_clear();
-#define NumberInput_append(key)                                                              \
-    numberInput.inputBuffer[numberInput.currentIndex] = key;                                               \
-    numberInput.currentIndex++;
-#define NumberInput_backspace()                                                                \
-    if (numberInput.currentIndex)                                                                      \
+#define NumberInput_append(key)                                                \
+    {                                                                          \
+        numberInput.inputBuffer[numberInput.currentIndex] = key;               \
+        numberInput.currentIndex++;                                            \
+    }
+#define NumberInput_backspace()                                                \
+    if (numberInput.currentIndex)                                              \
         numberInput.currentIndex--;
 uint8_t NumberInput_getNumber();
 

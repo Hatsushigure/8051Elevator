@@ -37,9 +37,23 @@ typedef enum
 
 void LcdDisplay_init();
 void LcdDisplay_sendCommand(uint8_t command);
-void LcdDisplay_sendData(uint8_t payload);
+void LcdDisplay_sendData(char payload);
 void LcdDisplay_sendString(const char* str, uint8_t length);
+#define LcdDisplay_clear()                                                     \
+    {                                                                          \
+        uint16_t dly = 1000;                                                   \
+        LcdDisplay_sendCommand(CMD_ClearScreen);                               \
+        shortDelay(dly); /* Clear screen needs a longer delay */               \
+    }
 #define LcdDisplay_setCursorPos(idx)                                           \
     LcdDisplay_sendCommand(CMD_SetDDRAMAddr | (idx))
+#define LcdDisplay_fastClearLine(line)                                         \
+    {                                                                          \
+        uint8_t i = 16;                                                        \
+        LcdDisplay_setCursorPos(line * 0x40);                                  \
+        LcdDisplay_sendCommand(CMD_SetDDRAMAddr);                              \
+        while (i--)                                                            \
+            LcdDisplay_sendData(' ');                                         \
+    }
 
 #endif // __LCDDISPLAY_H__

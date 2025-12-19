@@ -24,4 +24,6 @@ typedef short int16_t;
         TL1 = (uint16_t)(-40000) & 0x00FF; /*20 ms in 2MHz*/                   \
     }
 
+void myItoa(int8_t value, char* str);
+
 #endif // __UTILS_H__

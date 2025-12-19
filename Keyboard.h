@@ -12,7 +12,6 @@ enum KeyboardState
 enum SpecialKey
 {
     SK_A = 10,
-    SK_Minus = 10,
     SK_E = 14,
     SK_Backspace = 14,
     SK_F = 15,

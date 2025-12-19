@@ -14,9 +14,7 @@
 
 void LcdDisplay_init()
 {
-    uint16_t dly = 1000;
-    LcdDisplay_sendCommand(CMD_ClearScreen);
-    shortDelay(dly); // Clear screen needs a longer delay
+    LcdDisplay_clear();
     LcdDisplay_sendCommand(
         CMD_FunctionSet | CMD_FunctionSet_8Bit | CMD_FunctionSet_2Line |
         CMD_FunctionSet_5x10Dots
@@ -33,27 +31,27 @@ void LcdDisplay_init()
 
 void LcdDisplay_sendCommand(uint8_t command)
 {
+    uint8_t dly = 10;
+    shortDelay(dly);
     LcdDataPort = command;
     clearRsPin();
     clearRwPin();
     setEnPin();
-    {
-        uint8_t dly = 10;
-        shortDelay(dly);
-    }
+    dly = 10;
+    shortDelay(dly);
     clearEnPin();
 }
 
-void LcdDisplay_sendData(uint8_t payload)
+void LcdDisplay_sendData(char payload)
 {
+    uint8_t dly = 10;
+    shortDelay(dly);
     LcdDataPort = payload;
     setRsPin();
     clearRwPin();
     setEnPin();
-    {
-        uint8_t dly = 10;
-        shortDelay(dly);
-    }
+    dly = 10;
+    shortDelay(dly);
     clearEnPin();
 }
 
