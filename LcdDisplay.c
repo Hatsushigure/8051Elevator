@@ -1,0 +1,64 @@
+#include "LcdDisplay.h"
+
+#define LcdDataPort P5
+#define LcdRsPin P4 & 0x20
+#define LcdRwPin P4 & 0x40
+#define LcdEnPin P4 & 0x80
+
+#define setRsPin() P4 |= 0x20
+#define clearRsPin() P4 &= ~0x20
+#define setRwPin() P4 |= 0x40
+#define clearRwPin() P4 &= ~0x40
+#define setEnPin() P4 |= 0x80
+#define clearEnPin() P4 &= ~0x80
+
+void LcdDisplay_init()
+{
+    uint16_t dly = 1000;
+    LcdDisplay_sendCommand(CMD_ClearScreen);
+    shortDelay(dly); // Clear screen needs a longer delay
+    LcdDisplay_sendCommand(
+        CMD_FunctionSet | CMD_FunctionSet_8Bit | CMD_FunctionSet_2Line |
+        CMD_FunctionSet_5x10Dots
+    );
+    LcdDisplay_sendCommand(
+        CMD_DisplaySwitch | CMD_DisplaySwitch_DisplayOn |
+        CMD_DisplaySwitch_CursorOff | CMD_DisplaySwitch_BlinkOff
+    );
+    LcdDisplay_sendCommand(
+        CMD_InputModeSet | CMD_InputModeSet_CursorIncrement |
+        CMD_InputModeSet_NoShift
+    );
+}
+
+void LcdDisplay_sendCommand(uint8_t command)
+{
+    LcdDataPort = command;
+    clearRsPin();
+    clearRwPin();
+    setEnPin();
+    {
+        uint8_t dly = 10;
+        shortDelay(dly);
+    }
+    clearEnPin();
+}
+
+void LcdDisplay_sendData(uint8_t payload)
+{
+    LcdDataPort = payload;
+    setRsPin();
+    clearRwPin();
+    setEnPin();
+    {
+        uint8_t dly = 10;
+        shortDelay(dly);
+    }
+    clearEnPin();
+}
+
+void LcdDisplay_sendString(const char* str, uint8_t length)
+{
+    while (length--)
+        LcdDisplay_sendData(*str++);
+}

@@ -411,6 +411,11 @@
               <FileType>1</FileType>
               <FilePath>.\ElevatorControl.c</FilePath>
             </File>
+            <File>
+              <FileName>LcdDisplay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LcdDisplay.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

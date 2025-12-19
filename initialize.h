@@ -6,10 +6,11 @@
 void init();
 #define initPin()                                                              \
     {                                                                          \
-        P0MDOUT = 0xFF;                                                        \
-        P1MDOUT = 0xFF;                                                        \
-        P2MDOUT = 0xFF;                                                        \
-        P3MDOUT = 0xFF;                                                        \
+        P0MDOUT = 0xFF; /* P0 pull-up */                                       \
+        P1MDOUT = 0xFF; /* P1 pull-up */                                       \
+        P2MDOUT = 0xFF; /* P2 pull-up */                                       \
+        P3MDOUT = 0xFF; /* P3 pull-up */                                       \
+        P74OUT = 0x0F;  /* P4 and P5 pull-up */                                \
         XBR2 = 0x40;                                                           \
     }
 #define initWatchdog()                                                         \
