@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-enum DisplaySegement
+typedef enum
 {
     DS_Top = 0xFE,
     DS_TopRight = 0xFD,
@@ -14,9 +14,9 @@ enum DisplaySegement
     DS_Middle = 0xBF,
     DS_Dot = 0x7F,
     DS_Disabled = 0xFF
-};
+} DisplaySegement;
 
-enum DisplayCharacter
+typedef enum
 {
     DC_0 = DS_Top & DS_TopRight & DS_BottomRight & DS_Bottom & DS_BottomLeft &
            DS_TopLeft,
@@ -47,7 +47,7 @@ enum DisplayCharacter
     DC_O = DS_BottomRight & DS_Bottom & DS_BottomLeft & DS_Middle,
     DC_P = DS_Top & DS_TopRight & DS_BottomLeft & DS_TopLeft & DS_Middle,
     DC_U = DS_TopRight & DS_BottomRight & DS_Bottom & DS_BottomLeft & DS_TopLeft
-};
+} DisplayCharacter;
 
 typedef struct
 {

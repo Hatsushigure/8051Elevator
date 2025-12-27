@@ -24,6 +24,18 @@ typedef short int16_t;
         TL1 = (uint16_t)(-40000) & 0x00FF; /*20 ms in 2MHz*/                   \
     }
 
+#define ElevatorDoorTextBlinkCounterDefault 25
+#define ElevatorOpenDoorCounterDefault 10
+#define ElevatorCloseDoorCounterDefault 4
+#define ElevatorMoveCounterDefault 50
+extern const uint8_t code personPrompt[];
+extern const uint8_t code weightPrompt[];
+extern const uint8_t code finishPrompt[];
+extern const uint8_t code errorPrompt[];
+extern const uint8_t code correctPassword[];
+extern const uint8_t code openDoorPrompt[];
+extern const uint8_t code closeDoorPrompt[];
+
 void myItoa(int8_t value, char* str);
 
 #endif // __UTILS_H__

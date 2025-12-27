@@ -32,17 +32,6 @@ const uint8_t code castTable[] = {DC_0,        DC_1, DC_2,        DC_3,
                                   DC_8,        DC_9, DS_Middle,   DC_B,
                                   DC_C,        DC_D, DC_E,        DC_F,
                                   DS_Disabled, DC_D, DS_Disabled, DC_U};
-const uint8_t code correctPassword[] = {1, 1, 4, 5, 1, 4};
-const uint8_t code personPrompt[] = {DC_N, DC_O& DS_Dot};
-const uint8_t code weightPrompt[] = {DC_R, DC_L& DS_Dot};
-const uint8_t code finishPrompt[] = {DC_F, DC_1, DC_N, DC_1, DC_5, DC_H};
-const uint8_t code errorPrompt[] = {DC_E, DC_R, DC_R};
-const uint8_t code openDoorPrompt[] = "OP ";
-const uint8_t code closeDoorPrompt[] = "CL   ";
-#define ElevatorDoorTextBlinkCounterDefault 25
-#define ElevatorOpenDoorCounterDefault 10
-#define ElevatorCloseDoorCounterDefault 4
-#define ElevatorMoveCounterDefault 50
 
 WorkState workState = WS_GetPassword;
 uint8_t passwordTrialCount = 5;
