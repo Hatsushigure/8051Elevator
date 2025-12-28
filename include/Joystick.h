@@ -27,11 +27,7 @@ typedef struct
 
 extern Joystick joystick;
 
-#define Joystick_init()                                                        \
-    {                                                                          \
-        joystick.releasedKey = 0xFF;                                           \
-        joystick.lastKeyState = 0xFF;                                          \
-    }
+void Joystick_init();
 void Joystick_getKey();
 
 #endif // __JOYSTICK_H__

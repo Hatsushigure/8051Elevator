@@ -2,6 +2,12 @@
 
 Joystick joystick;
 
+void Joystick_init()
+{
+    joystick.releasedKey = 0xFF;
+    joystick.lastKeyState = 0xFF;
+}
+
 void Joystick_getKey()
 {
     uint8_t currentKeyState = P4 & 0x0F;

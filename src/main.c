@@ -63,10 +63,7 @@ void getContentEx(
 void getPassword();
 void getMaxPerson();
 void getMaxWeight();
-#define getElevatorControl()                                                   \
-    {                                                                          \
-        getContent(2, WS_ProcessElevatorControl);                              \
-    }
+void getElevatorControl();
 void varifyPassword();
 void wrongPasswordDelay();
 void finishDelay();
@@ -196,8 +193,7 @@ void finishDelay()
             CMD_DisplaySwitch | CMD_DisplaySwitch_BlinkOff |
             CMD_DisplaySwitch_CursorOff | CMD_DisplaySwitch_DisplayOn
         );
-        LcdDisplay_clearLine(0);
-        LcdDisplay_clearLine(1);
+        LcdDisplay_clear();
         setupAllFloorRequestDisplay();
         workState = WS_GetElevatorControl;
     }
@@ -453,3 +449,5 @@ void getMaxWeight()
     getContentEx(3, finishPrompt, 13, WS_Finish, 0);
     maxPerson = numberInput.result;
 }
+
+void getElevatorControl() { getContent(2, WS_ProcessElevatorControl); }

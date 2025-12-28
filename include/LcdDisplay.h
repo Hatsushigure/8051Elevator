@@ -39,12 +39,7 @@ void LcdDisplay_init();
 void LcdDisplay_sendCommand(uint8_t command);
 void LcdDisplay_sendData(char payload);
 void LcdDisplay_sendString(const char* str, uint8_t length);
-#define LcdDisplay_clear()                                                     \
-    {                                                                          \
-        uint16_t dly = 1000;                                                   \
-        LcdDisplay_sendCommand(CMD_ClearScreen);                               \
-        shortDelay(dly); /* Clear screen needs a longer delay */               \
-    }
+void LcdDisplay_clear();
 #define LcdDisplay_setCursorPos(idx)                                           \
     LcdDisplay_sendCommand(CMD_SetDDRAMAddr | (idx))
 void LcdDisplay_sendEmptyString(uint8_t length);

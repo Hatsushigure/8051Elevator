@@ -2,6 +2,18 @@
 
 NumberInput numberInput;
 
+void NumberInput_append(uint8_t key)
+{
+    numberInput.inputBuffer[numberInput.currentIndex] = key;
+    numberInput.currentIndex++;
+}
+
+void NumberInput_backspace()
+{
+    if (numberInput.currentIndex)
+        numberInput.currentIndex--;
+}
+
 uint8_t NumberInput_getNumber()
 {
     uint8_t i = 0;

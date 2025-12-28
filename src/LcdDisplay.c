@@ -61,6 +61,13 @@ void LcdDisplay_sendString(const char* str, uint8_t length)
         LcdDisplay_sendData(*(str++));
 }
 
+void LcdDisplay_clear()
+{
+    uint16_t dly = 1000;
+    LcdDisplay_sendCommand(CMD_ClearScreen);
+    shortDelay(dly); // Clear screen needs a longer delay
+}
+
 void LcdDisplay_sendEmptyString(uint8_t length)
 {
     while (length--)

@@ -35,15 +35,7 @@ typedef struct
 
 extern ElevatorControl elevatorControl;
 
-#define ElevatorControl_init()                                                 \
-    {                                                                          \
-        uint8_t i = 0;                                                         \
-        elevatorControl.runState = ERS_Idle;                                   \
-        elevatorControl.doorState = EDS_Closed;                                \
-        elevatorControl.currentFloorIndex = 2;                                 \
-        for (; i != 10; i++)                                                   \
-            elevatorControl.requestBitmap[i] = 0;                              \
-    }
+void ElevatorControl_init();
 void ElevatorControl_makeRequest(int8_t floorIndex, FloorRequest request);
 void ElevatorControl_move();
 int8_t ElevatorControl_indexToFloor(int8_t index);
