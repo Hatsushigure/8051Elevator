@@ -47,14 +47,6 @@ void LcdDisplay_sendString(const char* str, uint8_t length);
     }
 #define LcdDisplay_setCursorPos(idx)                                           \
     LcdDisplay_sendCommand(CMD_SetDDRAMAddr | (idx))
-#define LcdDisplay_fastClearLine(line)                                         \
-    {                                                                          \
-        uint8_t i = 16;                                                        \
-        LcdDisplay_setCursorPos(line * 0x40);                                  \
-        LcdDisplay_sendCommand(CMD_SetDDRAMAddr);                              \
-        while (i--)                                                            \
-            LcdDisplay_sendData('0');                                          \
-    }
 void LcdDisplay_sendEmptyString(uint8_t length);
 
 #endif // __LCDDISPLAY_H__

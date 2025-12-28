@@ -31,22 +31,26 @@ void LcdDisplay_init()
 
 void LcdDisplay_sendCommand(uint8_t command)
 {
-    uint8_t dly = 10;
+    uint8_t dly = 100;
+    shortDelay(dly);
     LcdDataPort = command;
     clearRsPin();
     clearRwPin();
     setEnPin();
+    dly = 10;
     shortDelay(dly);
     clearEnPin();
 }
 
 void LcdDisplay_sendData(char payload)
 {
-    uint8_t dly = 10;
+    uint8_t dly = 100;
+    shortDelay(dly);
     LcdDataPort = payload;
     setRsPin();
     clearRwPin();
     setEnPin();
+    dly = 10;
     shortDelay(dly);
     clearEnPin();
 }
