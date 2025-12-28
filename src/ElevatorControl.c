@@ -11,7 +11,7 @@ int8_t ElevatorControl_indexToFloor(int8_t index)
 bit hasRequestAbove(uint8_t floorIndex)
 {
     uint8_t i = floorIndex + 1;
-    for (; i != 9; i++)
+    for (; i != 10; i++)
     {
         if (elevatorControl.requestBitmap[i])
             return 1;

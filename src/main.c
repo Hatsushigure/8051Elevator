@@ -390,7 +390,7 @@ void getContent(
         return;
     if (isElevatorControl)
     {
-        int8_t floor = keyboard.releasedKey + 1;
+        int8_t floor = keyboard.releasedKey;
         myItoa(
             ElevatorControl_indexToFloor(floor),
             (char*)&display.displayBuffer[numberInput.currentIndex]
