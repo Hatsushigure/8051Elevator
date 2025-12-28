@@ -8,24 +8,24 @@ int8_t ElevatorControl_indexToFloor(int8_t index)
     return index - (index <= 0);
 }
 
-uint8_t hasRequestAbove(uint8_t floorIndex)
+bit hasRequestAbove(uint8_t floorIndex)
 {
     uint8_t i = floorIndex + 1;
     for (; i != 11; i++)
     {
         if (elevatorControl.requestBitmap[i])
-            return i;
+            return 1;
     }
     return 0;
 }
 
-uint8_t hasRequestBelow(uint8_t floorIndex)
+bit hasRequestBelow(uint8_t floorIndex)
 {
     int8_t i = floorIndex - 1;
     for (; i >= 0; i--)
     {
         if (elevatorControl.requestBitmap[i])
-            return i;
+            return 1;
     }
     return 0;
 }
@@ -47,11 +47,9 @@ void ElevatorControl_move()
             elevatorControl.requestBitmap[elevatorControl.currentFloorIndex] =
                 FR_None;
             elevatorControl.doorState = EDS_Open;
-        } else if (elevatorControl.targetFloorIndex =
-                       hasRequestAbove(elevatorControl.currentFloorIndex))
+        } else if (hasRequestAbove(elevatorControl.currentFloorIndex))
             elevatorControl.runState = ERS_MovingUp;
-        else if (elevatorControl.targetFloorIndex =
-                     hasRequestBelow(elevatorControl.currentFloorIndex))
+        else if (hasRequestBelow(elevatorControl.currentFloorIndex))
             elevatorControl.runState = ERS_MovingDown;
         break;
     case ERS_MovingUp:
@@ -62,8 +60,7 @@ void ElevatorControl_move()
             elevatorControl.requestBitmap[elevatorControl.currentFloorIndex] &=
                 (~(FR_Up | FR_Inside));
             elevatorControl.doorState = EDS_Open;
-            if (elevatorControl.targetFloorIndex =
-                    hasRequestAbove(elevatorControl.currentFloorIndex))
+            if (hasRequestAbove(elevatorControl.currentFloorIndex))
                 break;
             elevatorControl.runState = ERS_Idle;
             break;
@@ -74,8 +71,7 @@ void ElevatorControl_move()
             elevatorControl.requestBitmap[elevatorControl.currentFloorIndex] &=
                 (~FR_Down);
             elevatorControl.doorState = EDS_Open;
-            if (elevatorControl.targetFloorIndex =
-                    hasRequestBelow(elevatorControl.currentFloorIndex))
+            if (hasRequestBelow(elevatorControl.currentFloorIndex))
             {
                 elevatorControl.runState = ERS_MovingDown;
                 break;
@@ -92,8 +88,7 @@ void ElevatorControl_move()
             elevatorControl.requestBitmap[elevatorControl.currentFloorIndex] &=
                 (~(FR_Down | FR_Inside));
             elevatorControl.doorState = EDS_Open;
-            if (elevatorControl.targetFloorIndex =
-                    hasRequestBelow(elevatorControl.currentFloorIndex))
+            if (hasRequestBelow(elevatorControl.currentFloorIndex))
                 break;
             elevatorControl.runState = ERS_Idle;
             break;
@@ -104,8 +99,7 @@ void ElevatorControl_move()
             elevatorControl.requestBitmap[elevatorControl.currentFloorIndex] &=
                 (~FR_Up);
             elevatorControl.doorState = EDS_Open;
-            if (elevatorControl.targetFloorIndex =
-                    hasRequestAbove(elevatorControl.currentFloorIndex))
+            if (hasRequestAbove(elevatorControl.currentFloorIndex))
             {
                 elevatorControl.runState = ERS_MovingUp;
                 break;

@@ -206,11 +206,11 @@ void onTimer1Timeout() INTERRUPT(3)
                 LcdDisplay_sendData('^');
             else
                 LcdDisplay_sendData('v');
+            LcdDisplay_setCursorPos(2);
             myItoa(
-                ElevatorControl_indexToFloor(elevatorControl.targetFloorIndex),
+                ElevatorControl_indexToFloor(elevatorControl.currentFloorIndex),
                 floorStr
             );
-            LcdDisplay_setCursorPos(2);
             LcdDisplay_sendString(floorStr, 2);
             LcdDisplay_sendData(' ');
         }

@@ -30,7 +30,6 @@ typedef struct
     ElevatorRunState runState;
     ElevatorDoorState doorState;
     uint8_t currentFloorIndex;
-    uint8_t targetFloorIndex;
     uint8_t requestBitmap[12];
 } ElevatorControl;
 
