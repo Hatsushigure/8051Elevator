@@ -36,7 +36,7 @@ const uint8_t code castTable[] = {DC_0,        DC_1, DC_2,        DC_3,
 WorkState workState = WS_GetPassword;
 uint8_t passwordTrialCount = 5;
 uint8_t wrongPasswordDelayTime;
-uint8_t finishDelayTime = 80;
+uint8_t finishDelayTime = FinishDelayTimeInitial;
 uint8_t maxPerson;
 uint8_t maxWeight;
 bit configurationComplete = 0;
@@ -51,31 +51,21 @@ uint8_t elevatorMoveCounter =
 bit elevatorDoorTextVisible = 1;
 
 void getContent(
+    uint8_t contentLength, uint8_t nextState
+); // Only for getting elevator control
+void getContentEx(
     uint8_t contentLength,
-    uint8_t promptLength,
     const uint8_t code* nextPrompt,
     uint8_t nextPromptSize,
     uint8_t nextState,
-    bit isPassword,
-    bit isElevatorControl
+    bit isPassword
 );
-#define getPassword()                                                          \
-    {                                                                          \
-        getContent(6, 0, 0, 0, WS_VarifyPassword, 1, 0);                       \
-    }
-#define getMaxPerson()                                                         \
-    {                                                                          \
-        getContent(3, 2, weightPrompt, 2, WS_GetMaxWeight, 0, 0);              \
-        maxWeight = numberInput.result;                                        \
-    }
-#define getMaxWeight()                                                         \
-    {                                                                          \
-        getContent(3, 2, finishPrompt, 6, WS_Finish, 0, 0);                    \
-        maxPerson = numberInput.result;                                        \
-    }
+void getPassword();
+void getMaxPerson();
+void getMaxWeight();
 #define getElevatorControl()                                                   \
     {                                                                          \
-        getContent(2, 0, 0, 0, WS_ProcessElevatorControl, 0, 1);               \
+        getContent(2, WS_ProcessElevatorControl);                              \
     }
 void varifyPassword();
 void wrongPasswordDelay();
@@ -88,6 +78,8 @@ void updateElevatorStatus();
 int main()
 {
     init();
+    LcdDisplay_println(passwordPrompt, 9, 0);
+    LcdDisplay_setCursorPos(0x40);
     while (1)
         ;
 }
@@ -161,17 +153,21 @@ void varifyPassword()
     }
     if (!passwordIsCorrect)
     {
-        Display_setPrompt(errorPrompt, 3);
-        display.displayBuffer[5] = castTable[passwordTrialCount];
+        LcdDisplay_println(passwordWrongPrompt, 14, 0);
+        LcdDisplay_setCursorPos(0x40);
+        LcdDisplay_sendString(trialCountPrompt, 12);
+        LcdDisplay_sendData(' ');
+        LcdDisplay_sendData('0' + passwordTrialCount);
+        LcdDisplay_sendEmptyString(2);
         wrongPasswordDelayTime = 100;
         workState = WS_PasswordWrong;
     } else
     {
-        Display_setPrompt(personPrompt, 2);
+        LcdDisplay_println(personPrompt, 11, 0);
+        LcdDisplay_setCursorPos(0x40);
         NumberInput_clear();
         workState = WS_GetMaxPerson;
     }
-    Display_resetDelayDisappear();
 }
 
 void wrongPasswordDelay()
@@ -180,8 +176,10 @@ void wrongPasswordDelay()
         return;
     if (wrongPasswordDelayTime == 0)
     {
-        Display_clear();
         NumberInput_clear();
+        LcdDisplay_println(passwordPrompt, 9, 0);
+        LcdDisplay_clearLine(1);
+        LcdDisplay_setCursorPos(0x40);
         workState = WS_GetPassword;
         return;
     }
@@ -192,9 +190,14 @@ void finishDelay()
 {
     if (finishDelayTime == 0)
     {
-        Display_clear();
         configurationComplete = 1;
         Led_allOn();
+        LcdDisplay_sendCommand(
+            CMD_DisplaySwitch | CMD_DisplaySwitch_BlinkOff |
+            CMD_DisplaySwitch_CursorOff | CMD_DisplaySwitch_DisplayOn
+        );
+        LcdDisplay_clearLine(0);
+        LcdDisplay_clearLine(1);
         setupAllFloorRequestDisplay();
         workState = WS_GetElevatorControl;
     }
@@ -338,19 +341,12 @@ void updateElevatorStatus()
     }
 }
 
-void getContent(
-    uint8_t contentLength,
-    uint8_t promptLength,
-    const uint8_t code* nextPrompt,
-    uint8_t nextPromptSize,
-    uint8_t nextState,
-    bit isPassword,
-    bit isElevatorControl
-)
+void getContent(uint8_t contentLength, uint8_t nextState)
 {
-    Display_promptInput(promptLength + numberInput.currentIndex);
+    int8_t floor;
+    Display_promptInput(numberInput.currentIndex);
     Keyboard_getKey();
-    if (isElevatorControl && !numberInput.currentIndex)
+    if (!numberInput.currentIndex)
     {
         Joystick_getKey();
         if (joystick.releasedKey == SK_Up || joystick.releasedKey == SK_Down)
@@ -364,23 +360,16 @@ void getContent(
         return;
     if (keyboard.releasedKey == SK_Enter)
     {
+        Display_clear();
         numberInput.result = NumberInput_getNumber();
-        if (!isPassword && !isElevatorControl)
-            NumberInput_clear();
         workState = nextState;
-        Display_setPrompt(nextPrompt, nextPromptSize);
         return;
     }
     if (keyboard.releasedKey == SK_Backspace)
     {
-        if (isElevatorControl)
-        {
-            display.displayBuffer[promptLength + numberInput.currentIndex] =
-                DS_Disabled;
-            NumberInput_backspace();
-        }
-        display.displayBuffer[promptLength + numberInput.currentIndex] =
-            DS_Disabled;
+        display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
+        NumberInput_backspace();
+        display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
         NumberInput_backspace();
         return;
     }
@@ -388,26 +377,79 @@ void getContent(
         return;
     if (keyboard.releasedKey > 9)
         return;
-    if (isElevatorControl)
+    floor = keyboard.releasedKey;
+    myItoa(
+        ElevatorControl_indexToFloor(floor),
+        (char*)&display.displayBuffer[numberInput.currentIndex]
+    );
+    if (display.displayBuffer[numberInput.currentIndex] == '-')
+        display.displayBuffer[numberInput.currentIndex] = DS_Middle;
+    else
+        display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
+    display.displayBuffer[numberInput.currentIndex + 1] =
+        castTable[display.displayBuffer[numberInput.currentIndex + 1] - '0'];
+    NumberInput_append(0);
+    NumberInput_append(floor);
+    return;
+}
+
+void getContentEx(
+    uint8_t contentLength,
+    const uint8_t code* nextPrompt,
+    uint8_t nextPromptSize,
+    uint8_t nextState,
+    bit isPassword
+)
+{
+    LcdDisplay_sendCommand(
+        CMD_DisplaySwitch | CMD_DisplaySwitch_BlinkOn |
+        CMD_DisplaySwitch_CursorOn | CMD_DisplaySwitch_DisplayOn
+    );
+    Keyboard_getKey();
+    if (keyboard.state != KS_Released)
+        return;
+    if (keyboard.releasedKey == SK_Enter)
     {
-        int8_t floor = keyboard.releasedKey;
-        myItoa(
-            ElevatorControl_indexToFloor(floor),
-            (char*)&display.displayBuffer[numberInput.currentIndex]
-        );
-        if (display.displayBuffer[numberInput.currentIndex] == '-')
-            display.displayBuffer[numberInput.currentIndex] = DS_Middle;
-        else
-            display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
-        display.displayBuffer[numberInput.currentIndex + 1] = castTable
-            [display.displayBuffer[numberInput.currentIndex + 1] - '0'];
-        NumberInput_append(0);
-        NumberInput_append(floor);
+        numberInput.result = NumberInput_getNumber();
+        if (!isPassword)
+            NumberInput_clear();
+        LcdDisplay_println(nextPrompt, nextPromptSize, 0);
+        LcdDisplay_clearLine(1);
+        LcdDisplay_setCursorPos(0x40);
+        workState = nextState;
         return;
     }
-    display.displayBuffer[promptLength + numberInput.currentIndex] =
-        castTable[keyboard.releasedKey];
+    if (keyboard.releasedKey == SK_Backspace)
+    {
+        if (!numberInput.currentIndex)
+            return;
+        LcdDisplay_backspace();
+        NumberInput_backspace();
+        return;
+    }
+    if (numberInput.currentIndex >= contentLength)
+        return;
+    if (keyboard.releasedKey > 9)
+        return;
     if (isPassword)
-        Display_delayDisappear(promptLength + numberInput.currentIndex, 50);
+    {
+        LcdDisplay_sendCommand(CMD_Shift | CMD_Shift_Cursor | CMD_Shift_Left);
+        LcdDisplay_sendData('*');
+    }
+    LcdDisplay_sendData(keyboard.releasedKey + '0');
     NumberInput_append(keyboard.releasedKey);
+}
+
+void getPassword() { getContentEx(6, 0, 0, WS_VarifyPassword, 1); }
+
+void getMaxPerson()
+{
+    getContentEx(3, weightPrompt, 11, WS_GetMaxWeight, 0);
+    maxWeight = numberInput.result;
+}
+
+void getMaxWeight()
+{
+    getContentEx(3, finishPrompt, 13, WS_Finish, 0);
+    maxPerson = numberInput.result;
 }

@@ -28,10 +28,13 @@ typedef short int16_t;
 #define ElevatorOpenDoorCounterDefault 10
 #define ElevatorCloseDoorCounterDefault 4
 #define ElevatorMoveCounterDefault 50
-extern const uint8_t code personPrompt[];
-extern const uint8_t code weightPrompt[];
-extern const uint8_t code finishPrompt[];
-extern const uint8_t code errorPrompt[];
+#define FinishDelayTimeInitial 100
+extern const char code passwordPrompt[];
+extern const char code personPrompt[];
+extern const char code weightPrompt[];
+extern const char code trialCountPrompt[];
+extern const char code finishPrompt[];
+extern const char code passwordWrongPrompt[];
 extern const uint8_t code correctPassword[];
 extern const uint8_t code openDoorPrompt[];
 extern const uint8_t code closeDoorPrompt[];

@@ -41,7 +41,7 @@ extern ElevatorControl elevatorControl;
         elevatorControl.runState = ERS_Idle;                                   \
         elevatorControl.doorState = EDS_Closed;                                \
         elevatorControl.currentFloorIndex = 2;                                 \
-        for (; i != 10; i++)                                                    \
+        for (; i != 10; i++)                                                   \
             elevatorControl.requestBitmap[i] = 0;                              \
     }
 void ElevatorControl_makeRequest(int8_t floorIndex, FloorRequest request);

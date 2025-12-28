@@ -63,10 +63,6 @@ void Display_init();
 void Display_displayCharacter(uint8_t item, uint8_t index);
 void Display_refreshDisplay();
 void Display_promptInput(uint8_t index);
-#define Display_delayDisappear(index, time)                                    \
-    display.disappearCounter[index] = time;
-void Display_resetDelayDisappear();
 void Display_clear();
-void Display_setPrompt(uint8_t* prompt, uint8_t size);
 
 #endif // __DISPLAY_H__

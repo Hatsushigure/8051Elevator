@@ -67,3 +67,23 @@ void LcdDisplay_sendEmptyString(uint8_t length)
         LcdDisplay_sendData(' ');
 }
 
+void LcdDisplay_println(const char* content, uint8_t length, bit line)
+{
+    LcdDisplay_setCursorPos(line * 0x40);
+    LcdDisplay_sendString(content, length);
+    LcdDisplay_sendEmptyString(16 - length);
+}
+
+void LcdDisplay_clearLine(bit line)
+{
+    LcdDisplay_setCursorPos(line * 0x40);
+    LcdDisplay_sendEmptyString(16);
+}
+
+void LcdDisplay_backspace()
+{
+    LcdDisplay_sendCommand(CMD_Shift | CMD_Shift_Cursor | CMD_Shift_Left);
+    LcdDisplay_sendData(' ');
+    LcdDisplay_sendCommand(CMD_Shift | CMD_Shift_Cursor | CMD_Shift_Left);
+}
+

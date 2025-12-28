@@ -48,5 +48,8 @@ void LcdDisplay_sendString(const char* str, uint8_t length);
 #define LcdDisplay_setCursorPos(idx)                                           \
     LcdDisplay_sendCommand(CMD_SetDDRAMAddr | (idx))
 void LcdDisplay_sendEmptyString(uint8_t length);
+void LcdDisplay_println(const char* content, uint8_t length, bit line);
+void LcdDisplay_clearLine(bit line);
+void LcdDisplay_backspace();
 
 #endif // __LCDDISPLAY_H__
