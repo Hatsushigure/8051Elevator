@@ -30,7 +30,7 @@ typedef struct
     ElevatorRunState runState;
     ElevatorDoorState doorState;
     uint8_t currentFloorIndex;
-    uint8_t requestBitmap[12];
+    uint8_t requestBitmap[10];
 } ElevatorControl;
 
 extern ElevatorControl elevatorControl;
@@ -40,8 +40,8 @@ extern ElevatorControl elevatorControl;
         uint8_t i = 0;                                                         \
         elevatorControl.runState = ERS_Idle;                                   \
         elevatorControl.doorState = EDS_Closed;                                \
-        elevatorControl.currentFloorIndex = 3;                                 \
-        for (; i != 11; i++)                                                   \
+        elevatorControl.currentFloorIndex = 2;                                 \
+        for (; i != 9; i++)                                                    \
             elevatorControl.requestBitmap[i] = 0;                              \
     }
 void ElevatorControl_makeRequest(int8_t floorIndex, FloorRequest request);

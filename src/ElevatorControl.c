@@ -4,14 +4,14 @@ ElevatorControl elevatorControl;
 
 int8_t ElevatorControl_indexToFloor(int8_t index)
 {
-    index -= 2;
+    index--;
     return index - (index <= 0);
 }
 
 bit hasRequestAbove(uint8_t floorIndex)
 {
     uint8_t i = floorIndex + 1;
-    for (; i != 11; i++)
+    for (; i != 9; i++)
     {
         if (elevatorControl.requestBitmap[i])
             return 1;
