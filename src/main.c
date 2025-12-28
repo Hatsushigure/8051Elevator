@@ -81,7 +81,9 @@ void varifyPassword();
 void wrongPasswordDelay();
 void finishDelay();
 void setupAllFloorRequestDisplay();
+void updateAllFloorRequestDisplay();
 void processElevatorControl();
+void updateElevatorStatus();
 
 int main()
 {
@@ -129,84 +131,12 @@ void onTimer0Timeout() INTERRUPT(1)
 
 void onTimer1Timeout() INTERRUPT(3)
 {
-    char floorStr[2];
     EA = 0;
     refillTimer1();
     if (!configurationComplete)
-    {
-        EA = 1;
-        return;
-    }
-
-    LcdDisplay_setCursorPos(3);
-    if (elevatorControl.doorState == EDS_Closing)
-        LcdDisplay_sendEmptyString(2);
-    else
-    {
-        myItoa(
-            ElevatorControl_indexToFloor(elevatorControl.currentFloorIndex),
-            floorStr
-        );
-        LcdDisplay_sendString(floorStr, 2);
-    }
-    elevatorMoveCounter--;
-    if (elevatorMoveCounter == 0)
-    {
-        elevatorMoveCounter = ElevatorMoveCounterDefault;
-        ElevatorControl_move();
-    }
-    if (elevatorControl.doorState == EDS_Open)
-    {
-        Led_allOff();
-        LcdDisplay_setCursorPos(0);
-        if (elevatorDoorTextVisible)
-            LcdDisplay_sendString(openDoorPrompt, 2);
-        else
-            LcdDisplay_sendEmptyString(2);
-        elevatorDoorTextBlinkCounter--;
-        if (elevatorDoorTextBlinkCounter == 0)
-        {
-            elevatorDoorTextBlinkCounter = ElevatorDoorTextBlinkCounterDefault;
-            elevatorOpenDoorCounter--;
-            elevatorDoorTextVisible = !elevatorDoorTextVisible;
-        }
-        if (elevatorOpenDoorCounter == 0)
-        {
-            elevatorControl.doorState = EDS_Closing;
-            elevatorOpenDoorCounter = ElevatorOpenDoorCounterDefault;
-            elevatorDoorTextBlinkCounter = ElevatorDoorTextBlinkCounterDefault;
-            elevatorDoorTextVisible = 1;
-        }
-    } else if (elevatorControl.doorState == EDS_Closing)
-    {
-        LcdDisplay_setCursorPos(0);
-        if (elevatorDoorTextVisible)
-            LcdDisplay_sendString(closeDoorPrompt, 2);
-        else
-            LcdDisplay_sendEmptyString(2);
-        elevatorDoorTextBlinkCounter--;
-        if (elevatorDoorTextBlinkCounter == 0)
-        {
-            elevatorDoorTextBlinkCounter = ElevatorDoorTextBlinkCounterDefault;
-            elevatorCloseDoorCounter--;
-            elevatorDoorTextVisible = !elevatorDoorTextVisible;
-        }
-        if (elevatorCloseDoorCounter == 0)
-        {
-            elevatorCloseDoorCounter = ElevatorCloseDoorCounterDefault;
-            elevatorDoorTextBlinkCounter = ElevatorDoorTextBlinkCounterDefault;
-            elevatorDoorTextVisible = 1;
-            elevatorControl.doorState = EDS_Closed;
-            Led_allOn();
-        }
-    } else if (elevatorControl.runState != ERS_Idle)
-    {
-        LcdDisplay_setCursorPos(0);
-        if (elevatorControl.runState == ERS_MovingUp)
-            LcdDisplay_sendData('^');
-        else
-            LcdDisplay_sendData('v');
-    }
+        goto onTimer1Timeout_exit;
+    updateElevatorStatus();
+onTimer1Timeout_exit:
     EA = 1;
 }
 
@@ -284,6 +214,27 @@ void setupAllFloorRequestDisplay()
     }
 }
 
+void updateAllFloorRequestDisplay()
+{
+    uint8_t i = 0;
+    for (; i < 10; i++)
+    {
+        if (i == 0)
+            LcdDisplay_setCursorPos(12);
+        else if (i == 1)
+            LcdDisplay_setCursorPos(15);
+        else
+            LcdDisplay_setCursorPos(0x41 + (i - 2) * 2);
+        if (elevatorControl.requestBitmap[i] & FR_Inside)
+        {
+            LcdDisplay_sendData('*');
+        } else
+        {
+            LcdDisplay_sendData(' ');
+        }
+    }
+}
+
 void processElevatorControl()
 {
     bit isExternalRequest = 0;
@@ -310,6 +261,81 @@ void processElevatorControl()
         ElevatorControl_makeRequest(floor, FR_Inside);
     NumberInput_clear();
     workState = WS_GetElevatorControl;
+}
+
+void updateElevatorStatus()
+{
+    char floorStr[2];
+    updateAllFloorRequestDisplay();
+    LcdDisplay_setCursorPos(3);
+    if (elevatorControl.doorState == EDS_Closing)
+        LcdDisplay_sendEmptyString(2);
+    else
+    {
+        myItoa(
+            ElevatorControl_indexToFloor(elevatorControl.currentFloorIndex),
+            floorStr
+        );
+        LcdDisplay_sendString(floorStr, 2);
+    }
+    elevatorMoveCounter--;
+    if (elevatorMoveCounter == 0)
+    {
+        elevatorMoveCounter = ElevatorMoveCounterDefault;
+        ElevatorControl_move();
+    }
+    if (elevatorControl.doorState == EDS_Open)
+    {
+        Led_allOff();
+        LcdDisplay_setCursorPos(0);
+        if (elevatorDoorTextVisible)
+            LcdDisplay_sendString(openDoorPrompt, 2);
+        else
+            LcdDisplay_sendEmptyString(2);
+        elevatorDoorTextBlinkCounter--;
+        if (elevatorDoorTextBlinkCounter == 0)
+        {
+            elevatorDoorTextBlinkCounter = ElevatorDoorTextBlinkCounterDefault;
+            elevatorOpenDoorCounter--;
+            elevatorDoorTextVisible = !elevatorDoorTextVisible;
+        }
+        if (elevatorOpenDoorCounter == 0)
+        {
+            elevatorControl.doorState = EDS_Closing;
+            elevatorOpenDoorCounter = ElevatorOpenDoorCounterDefault;
+            elevatorDoorTextBlinkCounter = ElevatorDoorTextBlinkCounterDefault;
+            elevatorDoorTextVisible = 1;
+        }
+    } else if (elevatorControl.doorState == EDS_Closing)
+    {
+        LcdDisplay_setCursorPos(0);
+        if (elevatorDoorTextVisible)
+            LcdDisplay_sendString(closeDoorPrompt, 2);
+        else
+            LcdDisplay_sendEmptyString(2);
+        elevatorDoorTextBlinkCounter--;
+        if (elevatorDoorTextBlinkCounter == 0)
+        {
+            elevatorDoorTextBlinkCounter = ElevatorDoorTextBlinkCounterDefault;
+            elevatorCloseDoorCounter--;
+            elevatorDoorTextVisible = !elevatorDoorTextVisible;
+        }
+        if (elevatorCloseDoorCounter == 0)
+        {
+            elevatorCloseDoorCounter = ElevatorCloseDoorCounterDefault;
+            elevatorDoorTextBlinkCounter = ElevatorDoorTextBlinkCounterDefault;
+            elevatorDoorTextVisible = 1;
+            elevatorControl.doorState = EDS_Closed;
+            Led_allOn();
+        }
+    } else if (elevatorControl.runState != ERS_Idle)
+    {
+        LcdDisplay_setCursorPos(0);
+        if (elevatorControl.runState == ERS_MovingUp)
+            LcdDisplay_sendData('^');
+        else
+            LcdDisplay_sendData('v');
+    }
 }
 
 void getContent(

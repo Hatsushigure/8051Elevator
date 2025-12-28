@@ -7,4 +7,6 @@ An elevator control system running on C8051F020.
 - Varify administrator password (currently hard-encoded) and change settings
 - Basically run like a normal elevator
 - Current floor display
-- ~~Target floor display~~ (will be removed soon)
+- Requests (from inside) display
+- [ ] Disable floor
+- [ ] Cancle request (from inside)
