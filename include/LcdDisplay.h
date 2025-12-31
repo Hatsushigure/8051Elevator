@@ -42,6 +42,11 @@ void LcdDisplay_sendString(const char* str, uint8_t length);
 void LcdDisplay_clear();
 #define LcdDisplay_setCursorPos(idx)                                           \
     LcdDisplay_sendCommand(CMD_SetDDRAMAddr | (idx))
+#define LcdDisplay_enableCursor()                                              \
+    LcdDisplay_sendCommand(                                                    \
+        CMD_DisplaySwitch | CMD_DisplaySwitch_BlinkOn |                        \
+        CMD_DisplaySwitch_CursorOn | CMD_DisplaySwitch_DisplayOn               \
+    )
 void LcdDisplay_sendEmptyString(uint8_t length);
 void LcdDisplay_println(const char* content, uint8_t length, bit line);
 void LcdDisplay_clearLine(bit line);

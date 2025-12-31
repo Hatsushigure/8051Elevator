@@ -1,15 +1,15 @@
 #include "utils.h"
 #include "Display.h"
 
-const char code passwordPrompt[] = "Password:";
-const char code personPrompt[] = "Max Person:";
-const char code weightPrompt[] = "Max Weight:";
-const char code finishPrompt[] = "Config Finish";
-const char code passwordWrongPrompt[] = "Wrong Password";
-const char code trialCountPrompt[] = "Tiral Left: ";
-const uint8_t code correctPassword[] = {1, 1, 4, 5, 1, 4};
-const char code openDoorPrompt[] = "OP";
-const char code closeDoorPrompt[] = "CL";
+const char code passwordPrompt[9] = "Password:";
+const char code personPrompt[11] = "Max Person:";
+const char code weightPrompt[11] = "Max Weight:";
+const char code finishPrompt[13] = "Config Finish";
+const char code passwordWrongPrompt[14] = "Wrong Password";
+const char code trialCountPrompt[11] = "Tiral Left:";
+const uint8_t code correctPassword[6] = {1, 1, 4, 5, 1, 4};
+const char code openDoorPrompt[2] = "OP";
+const char code closeDoorPrompt[2] = "CL";
 
 void refillTimer0()
 {

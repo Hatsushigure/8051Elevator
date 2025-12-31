@@ -50,9 +50,6 @@ uint8_t elevatorMoveCounter =
     ElevatorMoveCounterDefault; // Elevator floor changes every 1s
 bit elevatorDoorTextVisible = 1;
 
-void getContent(
-    uint8_t contentLength, uint8_t nextState
-); // Only for getting elevator control
 void getContentEx(
     uint8_t contentLength,
     const uint8_t code* nextPrompt,
@@ -152,7 +149,7 @@ void varifyPassword()
     {
         LcdDisplay_println(passwordWrongPrompt, 14, 0);
         LcdDisplay_setCursorPos(0x40);
-        LcdDisplay_sendString(trialCountPrompt, 12);
+        LcdDisplay_sendString(trialCountPrompt, 11);
         LcdDisplay_sendData(' ');
         LcdDisplay_sendData('0' + passwordTrialCount);
         LcdDisplay_sendEmptyString(2);
@@ -337,58 +334,6 @@ void updateElevatorStatus()
     }
 }
 
-void getContent(uint8_t contentLength, uint8_t nextState)
-{
-    int8_t floor;
-    Display_promptInput(numberInput.currentIndex);
-    Keyboard_getKey();
-    if (!numberInput.currentIndex)
-    {
-        Joystick_getKey();
-        if (joystick.releasedKey == SK_Up || joystick.releasedKey == SK_Down)
-        {
-            NumberInput_append(joystick.releasedKey);
-            display.displayBuffer[0] = castTable[joystick.releasedKey];
-            return;
-        }
-    }
-    if (keyboard.state != KS_Released)
-        return;
-    if (keyboard.releasedKey == SK_Enter)
-    {
-        Display_clear();
-        numberInput.result = NumberInput_getNumber();
-        workState = nextState;
-        return;
-    }
-    if (keyboard.releasedKey == SK_Backspace)
-    {
-        display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
-        NumberInput_backspace();
-        display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
-        NumberInput_backspace();
-        return;
-    }
-    if (numberInput.currentIndex >= contentLength)
-        return;
-    if (keyboard.releasedKey > 9)
-        return;
-    floor = keyboard.releasedKey;
-    myItoa(
-        ElevatorControl_indexToFloor(floor),
-        (char*)&display.displayBuffer[numberInput.currentIndex]
-    );
-    if (display.displayBuffer[numberInput.currentIndex] == '-')
-        display.displayBuffer[numberInput.currentIndex] = DS_Middle;
-    else
-        display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
-    display.displayBuffer[numberInput.currentIndex + 1] =
-        castTable[display.displayBuffer[numberInput.currentIndex + 1] - '0'];
-    NumberInput_append(0);
-    NumberInput_append(floor);
-    return;
-}
-
 void getContentEx(
     uint8_t contentLength,
     const uint8_t code* nextPrompt,
@@ -397,10 +342,7 @@ void getContentEx(
     bit isPassword
 )
 {
-    LcdDisplay_sendCommand(
-        CMD_DisplaySwitch | CMD_DisplaySwitch_BlinkOn |
-        CMD_DisplaySwitch_CursorOn | CMD_DisplaySwitch_DisplayOn
-    );
+    LcdDisplay_enableCursor();
     Keyboard_getKey();
     if (keyboard.state != KS_Released)
         return;
@@ -450,4 +392,53 @@ void getMaxWeight()
     maxPerson = numberInput.result;
 }
 
-void getElevatorControl() { getContent(2, WS_ProcessElevatorControl); }
+void getElevatorControl()
+{
+    int8_t floor;
+    Display_promptInput(numberInput.currentIndex);
+    Keyboard_getKey();
+    if (!numberInput.currentIndex)
+    {
+        Joystick_getKey();
+        if (joystick.releasedKey == SK_Up || joystick.releasedKey == SK_Down)
+        {
+            NumberInput_append(joystick.releasedKey);
+            display.displayBuffer[0] = castTable[joystick.releasedKey];
+            return;
+        }
+    }
+    if (keyboard.state != KS_Released)
+        return;
+    if (keyboard.releasedKey == SK_Enter)
+    {
+        Display_clear();
+        workState = WS_ProcessElevatorControl;
+        return;
+    }
+    if (keyboard.releasedKey == SK_Backspace)
+    {
+        display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
+        NumberInput_backspace();
+        display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
+        NumberInput_backspace();
+        return;
+    }
+    if (numberInput.currentIndex >= 2)
+        return;
+    if (keyboard.releasedKey > 9)
+        return;
+    floor = keyboard.releasedKey;
+    myItoa(
+        ElevatorControl_indexToFloor(floor),
+        (char*)&display.displayBuffer[numberInput.currentIndex]
+    );
+    if (display.displayBuffer[numberInput.currentIndex] == '-')
+        display.displayBuffer[numberInput.currentIndex] = DS_Middle;
+    else
+        display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
+    display.displayBuffer[numberInput.currentIndex + 1] =
+        castTable[display.displayBuffer[numberInput.currentIndex + 1] - '0'];
+    NumberInput_append(0);
+    NumberInput_append(floor);
+    return;
+}
