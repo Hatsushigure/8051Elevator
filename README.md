@@ -8,5 +8,5 @@ An elevator control system running on C8051F020.
 - Basically run like a normal elevator
 - Current floor display
 - Requests (from inside) display
-- [ ] Disable floor
+- Disable floor
 - [ ] Cancle request (from inside)
