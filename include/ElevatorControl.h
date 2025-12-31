@@ -31,6 +31,7 @@ typedef struct
     ElevatorDoorState doorState;
     uint8_t currentFloorIndex;
     uint8_t requestBitmap[10];
+    uint8_t floorEnableStatus[10];
 } ElevatorControl;
 
 extern ElevatorControl elevatorControl;

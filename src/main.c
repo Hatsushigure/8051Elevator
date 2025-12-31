@@ -21,10 +21,11 @@ typedef enum
     WS_PasswordWrong,
     WS_GetMaxPerson,
     WS_GetMaxWeight,
+    WS_GetDoConfigDisabledFloor,
+    WS_GetDisabledFloor,
     WS_Finish,
     WS_GetElevatorControl,
     WS_ProcessElevatorControl,
-    WS_Free
 } WorkState;
 
 const uint8_t code castTable[] = {DC_0,        DC_1, DC_2,        DC_3,
@@ -36,7 +37,7 @@ const uint8_t code castTable[] = {DC_0,        DC_1, DC_2,        DC_3,
 WorkState workState = WS_GetPassword;
 uint8_t passwordTrialCount = 5;
 uint8_t wrongPasswordDelayTime;
-uint8_t finishDelayTime = FinishDelayTimeInitial;
+uint8_t finishDelayTime;
 uint8_t maxPerson;
 uint8_t maxWeight;
 bit configurationComplete = 0;
@@ -49,17 +50,23 @@ uint8_t elevatorCloseDoorCounter =
 uint8_t elevatorMoveCounter =
     ElevatorMoveCounterDefault; // Elevator floor changes every 1s
 bit elevatorDoorTextVisible = 1;
+bit promptIsSet = 0;
+bit doGetDisableedFloor = 0;
+uint8_t updateElevatorStatusCounter;
 
 void getContentEx(
+    const char* prompt,
+    uint8_t promptLength,
     uint8_t contentLength,
-    const uint8_t code* nextPrompt,
-    uint8_t nextPromptSize,
     uint8_t nextState,
-    bit isPassword
+    bit isPassword,
+    bit isElevatorFloor
 );
 void getPassword();
 void getMaxPerson();
 void getMaxWeight();
+void getDoConfigDisabledFloor();
+void getDisabledFloor();
 void getElevatorControl();
 void varifyPassword();
 void wrongPasswordDelay();
@@ -72,57 +79,63 @@ void updateElevatorStatus();
 int main()
 {
     init();
-    LcdDisplay_println(passwordPrompt, 9, 0);
+    LcdDisplay_println(PasswordPrompt, 9, 0);
     LcdDisplay_setCursorPos(0x40);
     while (1)
-        ;
+    {
+        switch (workState)
+        {
+        case WS_GetPassword:
+            getPassword();
+            break;
+        case WS_VarifyPassword:
+            varifyPassword();
+            break;
+        case WS_PasswordWrong:
+            wrongPasswordDelay();
+            break;
+        case WS_GetMaxPerson:
+            getMaxPerson();
+            break;
+        case WS_GetMaxWeight:
+            getMaxWeight();
+            break;
+        case WS_GetDoConfigDisabledFloor:
+            getDoConfigDisabledFloor();
+            break;
+        case WS_GetDisabledFloor:
+            getDisabledFloor();
+            break;
+        case WS_Finish:
+            finishDelay();
+            break;
+        case WS_GetElevatorControl:
+            getElevatorControl();
+            break;
+        case WS_ProcessElevatorControl:
+            processElevatorControl();
+            break;
+        }
+        if (!configurationComplete)
+            continue;
+        if (!updateElevatorStatusCounter)
+        {
+            updateElevatorStatus();
+            updateElevatorStatusCounter = UpdateElevatorStatusCounterInitial;
+        }
+    }
 }
 
 void onTimer0Timeout() INTERRUPT(1)
 {
     EA = 0;
     refillTimer0();
-    switch (workState)
-    {
-    case WS_GetPassword:
-        getPassword();
-        break;
-    case WS_VarifyPassword:
-        varifyPassword();
-        break;
-    case WS_PasswordWrong:
-        wrongPasswordDelay();
-        break;
-    case WS_GetMaxPerson:
-        getMaxPerson();
-        break;
-    case WS_GetMaxWeight:
-        getMaxWeight();
-        break;
-    case WS_Finish:
-        finishDelay();
-        break;
-    case WS_GetElevatorControl:
-        getElevatorControl();
-        break;
-    case WS_ProcessElevatorControl:
-        processElevatorControl();
-        break;
-    case WS_Free:
-        break;
-    }
+    Keyboard_getKey();
+    Joystick_getKey();
     Display_refreshDisplay();
-    EA = 1;
-}
-
-void onTimer1Timeout() INTERRUPT(3)
-{
-    EA = 0;
-    refillTimer1();
-    if (!configurationComplete)
-        goto onTimer1Timeout_exit;
-    updateElevatorStatus();
-onTimer1Timeout_exit:
+    wrongPasswordDelayTime--;
+    finishDelayTime--;
+    updateElevatorStatusCounter--;
     EA = 1;
 }
 
@@ -138,63 +151,51 @@ void varifyPassword()
         while (i)
         {
             i--;
-            if (numberInput.inputBuffer[i] != correctPassword[i])
+            if (numberInput.inputBuffer[i] != CorrectPassword[i])
             {
                 passwordIsCorrect = 0;
                 break;
             }
         }
     }
+    NumberInput_clear();
     if (!passwordIsCorrect)
     {
-        LcdDisplay_println(passwordWrongPrompt, 14, 0);
+        LcdDisplay_println(PasswordWrongPrompt, 14, 0);
         LcdDisplay_setCursorPos(0x40);
-        LcdDisplay_sendString(trialCountPrompt, 11);
+        LcdDisplay_sendString(TrialCountPrompt, 11);
         LcdDisplay_sendData(' ');
         LcdDisplay_sendData('0' + passwordTrialCount);
         LcdDisplay_sendEmptyString(2);
         wrongPasswordDelayTime = 100;
         workState = WS_PasswordWrong;
     } else
-    {
-        LcdDisplay_println(personPrompt, 11, 0);
-        LcdDisplay_setCursorPos(0x40);
-        NumberInput_clear();
         workState = WS_GetMaxPerson;
-    }
 }
 
 void wrongPasswordDelay()
 {
-    if (passwordTrialCount == 0)
-        return;
-    if (wrongPasswordDelayTime == 0)
-    {
-        NumberInput_clear();
-        LcdDisplay_println(passwordPrompt, 9, 0);
-        LcdDisplay_clearLine(1);
-        LcdDisplay_setCursorPos(0x40);
-        workState = WS_GetPassword;
-        return;
-    }
-    wrongPasswordDelayTime--;
+    wrongPasswordDelayTime = WrongPasswordDelayTimeInitial;
+    while (!passwordTrialCount)
+        ;
+    while (wrongPasswordDelayTime)
+        ;
+    workState = WS_GetPassword;
 }
 
 void finishDelay()
 {
-    if (finishDelayTime == 0)
-    {
-        configurationComplete = 1;
-        Led_allOn();
-        LcdDisplay_sendCommand(
-            CMD_DisplaySwitch | CMD_DisplaySwitch_BlinkOff |
-            CMD_DisplaySwitch_CursorOff | CMD_DisplaySwitch_DisplayOn
-        );
-        LcdDisplay_clear();
-        setupAllFloorRequestDisplay();
-        workState = WS_GetElevatorControl;
-    }
-    finishDelayTime--;
+    finishDelayTime = FinishDelayTimeInitial;
+    LcdDisplay_disableCursor();
+    LcdDisplay_println(FinishPrompt, 13, 0);
+    LcdDisplay_clearLine(1);
+    while (finishDelayTime)
+        ;
+    Led_allOn();
+    LcdDisplay_clearLine(0);
+    setupAllFloorRequestDisplay();
+    workState = WS_GetElevatorControl;
+    configurationComplete = 1;
 }
 
 void setupAllFloorRequestDisplay()
@@ -212,8 +213,8 @@ void setupAllFloorRequestDisplay()
 
 void updateAllFloorRequestDisplay()
 {
-    uint8_t i = 0;
-    for (; i < 10; i++)
+    uint8_t i = 10;
+    while (i--)
     {
         if (i == 0)
             LcdDisplay_setCursorPos(12);
@@ -285,7 +286,7 @@ void updateElevatorStatus()
         Led_allOff();
         LcdDisplay_setCursorPos(0);
         if (elevatorDoorTextVisible)
-            LcdDisplay_sendString(openDoorPrompt, 2);
+            LcdDisplay_sendString(OpenDoorPrompt, 2);
         else
             LcdDisplay_sendEmptyString(2);
         elevatorDoorTextBlinkCounter--;
@@ -306,7 +307,7 @@ void updateElevatorStatus()
     {
         LcdDisplay_setCursorPos(0);
         if (elevatorDoorTextVisible)
-            LcdDisplay_sendString(closeDoorPrompt, 2);
+            LcdDisplay_sendString(CloseDoorPrompt, 2);
         else
             LcdDisplay_sendEmptyString(2);
         elevatorDoorTextBlinkCounter--;
@@ -335,25 +336,31 @@ void updateElevatorStatus()
 }
 
 void getContentEx(
+    const char* prompt,
+    uint8_t promptLength,
     uint8_t contentLength,
-    const uint8_t code* nextPrompt,
-    uint8_t nextPromptSize,
     uint8_t nextState,
-    bit isPassword
+    bit isPassword,
+    bit isElevatorFloor
 )
 {
-    LcdDisplay_enableCursor();
-    Keyboard_getKey();
+    if (!promptIsSet)
+    {
+        LcdDisplay_println(prompt, promptLength, 0);
+        LcdDisplay_clearLine(1);
+        LcdDisplay_setCursorPos(0x40);
+        LcdDisplay_enableCursor();
+        promptIsSet = 1;
+    }
     if (keyboard.state != KS_Released)
         return;
+    keyboard.state = KS_Free;
     if (keyboard.releasedKey == SK_Enter)
     {
         numberInput.result = NumberInput_getNumber();
         if (!isPassword)
             NumberInput_clear();
-        LcdDisplay_println(nextPrompt, nextPromptSize, 0);
-        LcdDisplay_clearLine(1);
-        LcdDisplay_setCursorPos(0x40);
+        promptIsSet = 0;
         workState = nextState;
         return;
     }
@@ -362,6 +369,8 @@ void getContentEx(
         if (!numberInput.currentIndex)
             return;
         LcdDisplay_backspace();
+        if (isElevatorFloor)
+            LcdDisplay_backspace();
         NumberInput_backspace();
         return;
     }
@@ -374,32 +383,58 @@ void getContentEx(
         LcdDisplay_sendCommand(CMD_Shift | CMD_Shift_Cursor | CMD_Shift_Left);
         LcdDisplay_sendData('*');
     }
-    LcdDisplay_sendData(keyboard.releasedKey + '0');
+    if (isElevatorFloor)
+    {
+        myItoa(
+            ElevatorControl_indexToFloor(keyboard.releasedKey),
+            numberInput.inputBuffer + 1
+        );
+        LcdDisplay_sendString(numberInput.inputBuffer + 1, 2);
+    } else
+        LcdDisplay_sendData(keyboard.releasedKey + '0');
     NumberInput_append(keyboard.releasedKey);
 }
 
-void getPassword() { getContentEx(6, 0, 0, WS_VarifyPassword, 1); }
+void getPassword()
+{
+    getContentEx(PasswordPrompt, 9, 6, WS_VarifyPassword, 1, 0);
+}
 
 void getMaxPerson()
 {
-    getContentEx(3, weightPrompt, 11, WS_GetMaxWeight, 0);
+    getContentEx(PersonPrompt, 11, 3, WS_GetMaxWeight, 0, 0);
     maxWeight = numberInput.result;
 }
 
 void getMaxWeight()
 {
-    getContentEx(3, finishPrompt, 13, WS_Finish, 0);
+    getContentEx(WeightPrompt, 11, 3, WS_GetDoConfigDisabledFloor, 0, 0);
     maxPerson = numberInput.result;
+}
+
+void getDoConfigDisabledFloor()
+{
+    getContentEx(AskConfigDisableFloorPrompt, 16, 1, WS_GetDisabledFloor, 0, 0);
+    doGetDisableedFloor = (numberInput.result == 1);
+}
+
+void getDisabledFloor()
+{
+    if (!doGetDisableedFloor)
+    {
+        workState = WS_Finish;
+        return;
+    }
+    getContentEx(DisableFloorPrompt, 13, 1, WS_GetDoConfigDisabledFloor, 0, 1);
+    elevatorControl.floorEnableStatus[numberInput.result] = 0;
 }
 
 void getElevatorControl()
 {
     int8_t floor;
     Display_promptInput(numberInput.currentIndex);
-    Keyboard_getKey();
     if (!numberInput.currentIndex)
     {
-        Joystick_getKey();
         if (joystick.releasedKey == SK_Up || joystick.releasedKey == SK_Down)
         {
             NumberInput_append(joystick.releasedKey);
@@ -409,6 +444,7 @@ void getElevatorControl()
     }
     if (keyboard.state != KS_Released)
         return;
+    keyboard.state = KS_Free;
     if (keyboard.releasedKey == SK_Enter)
     {
         Display_clear();

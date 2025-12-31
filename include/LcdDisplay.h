@@ -47,6 +47,12 @@ void LcdDisplay_clear();
         CMD_DisplaySwitch | CMD_DisplaySwitch_BlinkOn |                        \
         CMD_DisplaySwitch_CursorOn | CMD_DisplaySwitch_DisplayOn               \
     )
+#define LcdDisplay_disableCursor()                                             \
+    LcdDisplay_sendCommand(                                                    \
+        CMD_DisplaySwitch | CMD_DisplaySwitch_BlinkOff |                       \
+        CMD_DisplaySwitch_CursorOff | CMD_DisplaySwitch_DisplayOn              \
+    )
+
 void LcdDisplay_sendEmptyString(uint8_t length);
 void LcdDisplay_println(const char* content, uint8_t length, bit line);
 void LcdDisplay_clearLine(bit line);

@@ -37,11 +37,16 @@ void ElevatorControl_init()
     elevatorControl.doorState = EDS_Closed;
     elevatorControl.currentFloorIndex = 2;
     for (; i != 10; i++)
+    {
         elevatorControl.requestBitmap[i] = 0;
+        elevatorControl.floorEnableStatus[i] = 1;
+    }
 }
 
 void ElevatorControl_makeRequest(int8_t floorIndex, FloorRequest request)
 {
+    if (!elevatorControl.floorEnableStatus[floorIndex])
+        return;
     elevatorControl.requestBitmap[floorIndex] |= request;
 }
 

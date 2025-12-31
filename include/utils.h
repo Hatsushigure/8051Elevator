@@ -13,22 +13,25 @@ typedef short int16_t;
         ;
 
 void refillTimer0();
-void refillTimer1();
 
-#define ElevatorDoorTextBlinkCounterDefault 25
+#define ElevatorDoorTextBlinkCounterDefault 5
 #define ElevatorOpenDoorCounterDefault 10
 #define ElevatorCloseDoorCounterDefault 4
-#define ElevatorMoveCounterDefault 50
+#define ElevatorMoveCounterDefault 5
 #define FinishDelayTimeInitial 100
-extern const char code passwordPrompt[];
-extern const char code personPrompt[];
-extern const char code weightPrompt[];
-extern const char code trialCountPrompt[];
-extern const char code finishPrompt[];
-extern const char code passwordWrongPrompt[];
-extern const uint8_t code correctPassword[];
-extern const char code openDoorPrompt[];
-extern const char code closeDoorPrompt[];
+#define WrongPasswordDelayTimeInitial 100
+#define UpdateElevatorStatusCounterInitial 10
+extern const char code PasswordPrompt[];
+extern const char code PersonPrompt[];
+extern const char code WeightPrompt[];
+extern const char code TrialCountPrompt[];
+extern const char code FinishPrompt[];
+extern const char code PasswordWrongPrompt[];
+extern const uint8_t code CorrectPassword[];
+extern const char code OpenDoorPrompt[];
+extern const char code CloseDoorPrompt[];
+extern const char code DisableFloorPrompt[];
+extern const char code AskConfigDisableFloorPrompt[];
 
 void myItoa(int8_t value, char* str);
 

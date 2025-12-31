@@ -34,11 +34,10 @@ void initPin()
 
 void initTimer()
 {
-    CKCON = 0x18;
-    TCON = 0x50; /* Enable T0 and T1 */
-    TMOD = 0x11; /* Timer 0 and 1 in mode 1 */
+    CKCON = 0x08;
+    TCON = 0x10; /* Enable T0 */
+    TMOD = 0x01; /* Timer 0 mode 1 */
     refillTimer0();
-    refillTimer1();
-    IE = 0x8A; /* Enable Timer 0 and 1 interrupt */
+    IE = 0x82; /* Enable Timer 0 interrupt */
 }
 

@@ -28,17 +28,17 @@ void Display_refreshDisplay()
         Display_displayCharacter(display.displayBuffer[i], currentDigit);
         currentDigit <<= 1;
     }
-}
-
-void Display_promptInput(uint8_t index)
-{
-    display.displayBuffer[index] = display.currentPromptValue;
     display.promptCount++;
     if (display.promptCount == 20)
     {
         display.promptCount = 0;
         display.currentPromptValue = ~(display.currentPromptValue ^ DS_Bottom);
     }
+}
+
+void Display_promptInput(uint8_t index)
+{
+    display.displayBuffer[index] = display.currentPromptValue;
 }
 
 void Display_clear()
