@@ -40,5 +40,6 @@ void ElevatorControl_init();
 void ElevatorControl_makeRequest(int8_t floorIndex, FloorRequest request);
 void ElevatorControl_move();
 int8_t ElevatorControl_indexToFloor(int8_t index);
+void ElevatorControl_cancleInternalRequest(int8_t floorIndex);
 
 #endif // __ELEVATOR_CONTROL_H__

@@ -9,4 +9,4 @@ An elevator control system running on C8051F020.
 - Current floor display
 - Requests (from inside) display
 - Disable floor
-- [ ] Cancle request (from inside)
+- Cancle request (from inside)

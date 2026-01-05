@@ -17,10 +17,13 @@ void refillTimer0();
 #define ElevatorDoorTextBlinkCounterDefault 5
 #define ElevatorOpenDoorCounterDefault 10
 #define ElevatorCloseDoorCounterDefault 4
-#define ElevatorMoveCounterDefault 5
+#define ElevatorMoveCounterDefault 10 // Elevator moves every 10 * 100ms
 #define FinishDelayTimeInitial 100
 #define WrongPasswordDelayTimeInitial 100
-#define UpdateElevatorStatusCounterInitial 10
+#define UpdateElevatorStatusCounterInitial                                     \
+    10 // Update elevator status every 100ms
+#define DoubleClickTimeCounterInitial                                          \
+    25 // Two key within 250ms will be double click
 extern const char code PasswordPrompt[];
 extern const char code PersonPrompt[];
 extern const char code WeightPrompt[];

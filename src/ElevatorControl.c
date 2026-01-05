@@ -8,6 +8,11 @@ int8_t ElevatorControl_indexToFloor(int8_t index)
     return index - (index <= 0);
 }
 
+void ElevatorControl_cancleInternalRequest(int8_t floorIndex)
+{
+    elevatorControl.requestBitmap[floorIndex] &= (~FR_Inside);
+}
+
 bit hasRequestAbove(uint8_t floorIndex)
 {
     uint8_t i = floorIndex + 1;
@@ -68,6 +73,11 @@ void ElevatorControl_move()
             elevatorControl.runState = ERS_MovingDown;
         break;
     case ERS_MovingUp:
+        if (elevatorControl.currentFloorIndex == 9) // Stop if reached top
+        {
+            elevatorControl.runState = ERS_Idle;
+            break;
+        }
         elevatorControl.currentFloorIndex++;
         if (elevatorControl.requestBitmap[elevatorControl.currentFloorIndex] &
             (FR_Up | FR_Inside))
@@ -96,6 +106,11 @@ void ElevatorControl_move()
         }
         break;
     case ERS_MovingDown:
+        if (elevatorControl.currentFloorIndex == 0) // Stop if reached bottom
+        {
+            elevatorControl.runState = ERS_Idle;
+            break;
+        }
         elevatorControl.currentFloorIndex--;
         if (elevatorControl.requestBitmap[elevatorControl.currentFloorIndex] &
             (FR_Down | FR_Inside))

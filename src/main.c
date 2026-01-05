@@ -44,15 +44,17 @@ bit configurationComplete = 0;
 uint8_t elevatorDoorTextBlinkCounter =
     ElevatorDoorTextBlinkCounterDefault; // Used to set a 0.5 s blink
 uint8_t elevatorOpenDoorCounter =
-    ElevatorOpenDoorCounterDefault; // Used to keep door open for 5s
+    ElevatorOpenDoorCounterDefault;      // Used to keep door open for 5s
 uint8_t elevatorCloseDoorCounter =
-    ElevatorCloseDoorCounterDefault; // Used to keep door closing for 2s
+    ElevatorCloseDoorCounterDefault;     // Used to keep door closing for 2s
 uint8_t elevatorMoveCounter =
-    ElevatorMoveCounterDefault; // Elevator floor changes every 1s
+    ElevatorMoveCounterDefault;          // Elevator floor changes every 1s
 bit elevatorDoorTextVisible = 1;
 bit promptIsSet = 0;
 bit doGetDisableedFloor = 0;
 uint8_t updateElevatorStatusCounter;
+uint8_t keyboardPreviousReleasedKey = 0xFF;
+uint8_t doubleClickTimeCounter = DoubleClickTimeCounterInitial;
 
 void getContentEx(
     const char* prompt,
@@ -83,7 +85,7 @@ int main()
     LcdDisplay_setCursorPos(0x40);
     while (1)
     {
-        switch (workState)
+        switch (workState) // Main state machine
         {
         case WS_GetPassword:
             getPassword();
@@ -136,6 +138,9 @@ void onTimer0Timeout() INTERRUPT(1)
     wrongPasswordDelayTime--;
     finishDelayTime--;
     updateElevatorStatusCounter--;
+    doubleClickTimeCounter--;
+    if (doubleClickTimeCounter == 0xFF)
+        doubleClickTimeCounter = 0;
     EA = 1;
 }
 
@@ -445,6 +450,16 @@ void getElevatorControl()
     if (keyboard.state != KS_Released)
         return;
     keyboard.state = KS_Free;
+    if (keyboard.releasedKey == keyboardPreviousReleasedKey &&
+        doubleClickTimeCounter && keyboard.releasedKey < 10)
+    {
+        Display_clear();
+        NumberInput_clear();
+        ElevatorControl_cancleInternalRequest(keyboard.releasedKey);
+        return;
+    }
+    keyboardPreviousReleasedKey = keyboard.releasedKey;
+    doubleClickTimeCounter = DoubleClickTimeCounterInitial;
     if (keyboard.releasedKey == SK_Enter)
     {
         Display_clear();
