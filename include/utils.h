@@ -14,16 +14,21 @@ typedef short int16_t;
 
 void refillTimer0();
 
-#define ElevatorDoorTextBlinkCounterDefault 5
-#define ElevatorOpenDoorCounterDefault 10
-#define ElevatorCloseDoorCounterDefault 4
-#define ElevatorMoveCounterDefault 10 // Elevator moves every 10 * 100ms
+#define ElevatorDoorTextBlinkCounterDefault 1
+#define ElevatorOpenDoorCounterDefault                                         \
+    10                               // 'OP' toogles 10 times when door open
+#define ElevatorCloseDoorCounterDefault                                        \
+    4                                // 'CL' toogles 4 times when door close
+#define ElevatorMoveCounterDefault 2 // Elevator moves every 2 * 500ms
 #define FinishDelayTimeInitial 100
 #define WrongPasswordDelayTimeInitial 100
 #define UpdateElevatorStatusCounterInitial                                     \
-    10 // Update elevator status every 100ms
+    50   // Update elevator status every 500ms
 #define DoubleClickTimeCounterInitial                                          \
-    25 // Two key within 250ms will be double click
+    30   // Two key within 300ms will be double click
+#define SpecialSequenceTimeLimitInitial                                        \
+    1000 // Time limit of special sequence is 10s
+#define MaxPasswordTrialCount 5
 extern const char code PasswordPrompt[];
 extern const char code PersonPrompt[];
 extern const char code WeightPrompt[];
@@ -35,6 +40,7 @@ extern const char code OpenDoorPrompt[];
 extern const char code CloseDoorPrompt[];
 extern const char code DisableFloorPrompt[];
 extern const char code AskConfigDisableFloorPrompt[];
+extern const uint8_t code SpecialKeySequence[];
 
 void myItoa(int8_t value, char* str);
 
