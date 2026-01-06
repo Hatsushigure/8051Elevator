@@ -1,5 +1,6 @@
 #include "utils.h"
-#include "Display.h"
+#include "Joystick.h"
+#include "Keyboard.h"
 
 const char code PasswordPrompt[9] = "Password:";
 const char code PersonPrompt[11] = "Max Person:";
@@ -12,6 +13,20 @@ const char code OpenDoorPrompt[2] = "OP";
 const char code CloseDoorPrompt[2] = "CL";
 const char code DisableFloorPrompt[13] = "Unused Floors";
 const char code AskConfigDisableFloorPrompt[16] = "Conf Unused Flr?";
+const uint8_t code SpecialKeySequence[12] = {
+    SK_Up,
+    SK_Up,
+    SK_Down,
+    SK_Down,
+    SK_Left,
+    SK_Right,
+    SK_Left,
+    SK_Right,
+    SK_B,
+    SK_A,
+    SK_B,
+    SK_A
+};
 
 void refillTimer0()
 {

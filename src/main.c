@@ -34,13 +34,13 @@ const uint8_t code castTable[] = {DC_0,        DC_1, DC_2,        DC_3,
                                   DC_C,        DC_D, DC_E,        DC_F,
                                   DS_Disabled, DC_D, DS_Disabled, DC_U};
 
-WorkState workState = WS_GetPassword;
-uint8_t passwordTrialCount = 5;
+WorkState workState;
+uint8_t passwordTrialCount;
 uint8_t wrongPasswordDelayTime;
 uint8_t finishDelayTime;
 uint8_t maxPerson;
 uint8_t maxWeight;
-bit configurationComplete = 0;
+bit configurationComplete;
 uint8_t elevatorDoorTextBlinkCounter =
     ElevatorDoorTextBlinkCounterDefault; // Used to set a 0.5 s blink
 uint8_t elevatorOpenDoorCounter =
@@ -48,13 +48,15 @@ uint8_t elevatorOpenDoorCounter =
 uint8_t elevatorCloseDoorCounter =
     ElevatorCloseDoorCounterDefault;     // Used to keep door closing for 2s
 uint8_t elevatorMoveCounter =
-    ElevatorMoveCounterDefault;          // Elevator floor changes every 1s
+    ElevatorMoveCounterDefault; // Elevator state update when it reach 0
 bit elevatorDoorTextVisible = 1;
 bit promptIsSet = 0;
 bit doGetDisableedFloor = 0;
 uint8_t updateElevatorStatusCounter;
 uint8_t keyboardPreviousReleasedKey = 0xFF;
 uint8_t doubleClickTimeCounter = DoubleClickTimeCounterInitial;
+uint16_t specialSequenceTimeLimit = SpecialSequenceTimeLimitInitial;
+uint8_t specialKeySequenceCurrentIndex;
 
 void getContentEx(
     const char* prompt,
@@ -77,12 +79,12 @@ void setupAllFloorRequestDisplay();
 void updateAllFloorRequestDisplay();
 void processElevatorControl();
 void updateElevatorStatus();
+void enterConfiguration();
 
 int main()
 {
     init();
-    LcdDisplay_println(PasswordPrompt, 9, 0);
-    LcdDisplay_setCursorPos(0x40);
+    enterConfiguration();
     while (1)
     {
         switch (workState) // Main state machine
@@ -122,8 +124,8 @@ int main()
             continue;
         if (!updateElevatorStatusCounter)
         {
-            updateElevatorStatus();
             updateElevatorStatusCounter = UpdateElevatorStatusCounterInitial;
+            updateElevatorStatus();
         }
     }
 }
@@ -141,6 +143,9 @@ void onTimer0Timeout() INTERRUPT(1)
     doubleClickTimeCounter--;
     if (doubleClickTimeCounter == 0xFF)
         doubleClickTimeCounter = 0;
+    specialSequenceTimeLimit--;
+    if (specialSequenceTimeLimit == 0xFFFF)
+        specialSequenceTimeLimit = 0;
     EA = 1;
 }
 
@@ -270,6 +275,12 @@ void updateElevatorStatus()
     char floorStr[2];
     updateAllFloorRequestDisplay();
     LcdDisplay_setCursorPos(3);
+    elevatorMoveCounter--;
+    if (elevatorMoveCounter == 0)
+    {
+        elevatorMoveCounter = ElevatorMoveCounterDefault;
+        ElevatorControl_move();
+    }
     if (elevatorControl.doorState == EDS_Closing)
         LcdDisplay_sendEmptyString(2);
     else
@@ -279,12 +290,6 @@ void updateElevatorStatus()
             floorStr
         );
         LcdDisplay_sendString(floorStr, 2);
-    }
-    elevatorMoveCounter--;
-    if (elevatorMoveCounter == 0)
-    {
-        elevatorMoveCounter = ElevatorMoveCounterDefault;
-        ElevatorControl_move();
     }
     if (elevatorControl.doorState == EDS_Open)
     {
@@ -338,6 +343,17 @@ void updateElevatorStatus()
         else
             LcdDisplay_sendData('v');
     }
+}
+
+void enterConfiguration()
+{
+    configurationComplete = 0;
+    specialKeySequenceCurrentIndex = 0;
+    workState = WS_GetPassword;
+    Led_allOff();
+    NumberInput_clear();
+    passwordTrialCount = MaxPasswordTrialCount;
+    Display_clear();
 }
 
 void getContentEx(
@@ -437,36 +453,64 @@ void getDisabledFloor()
 void getElevatorControl()
 {
     int8_t floor;
+    uint8_t currentReleasedKey;
     Display_promptInput(numberInput.currentIndex);
-    if (!numberInput.currentIndex)
-    {
-        if (joystick.releasedKey == SK_Up || joystick.releasedKey == SK_Down)
-        {
-            NumberInput_append(joystick.releasedKey);
-            display.displayBuffer[0] = castTable[joystick.releasedKey];
-            return;
-        }
-    }
-    if (keyboard.state != KS_Released)
+
+    // Store keys and reset keyboard and joystick
+    if (joystick.releasedKey != 0xFF)
+        currentReleasedKey = joystick.releasedKey;
+    else if (keyboard.state == KS_Released)
+        currentReleasedKey = keyboard.releasedKey;
+    else
         return;
     keyboard.state = KS_Free;
-    if (keyboard.releasedKey == keyboardPreviousReleasedKey &&
-        doubleClickTimeCounter && keyboard.releasedKey < 10)
+    joystick.releasedKey = 0xFF;
+
+    // Process special sequence
+    if (!specialKeySequenceCurrentIndex)
+        specialSequenceTimeLimit = SpecialSequenceTimeLimitInitial;
+    if (specialSequenceTimeLimit &&
+        currentReleasedKey ==
+            SpecialKeySequence[specialKeySequenceCurrentIndex])
+        specialKeySequenceCurrentIndex++;
+    else
+        specialKeySequenceCurrentIndex = 0;
+    if (specialKeySequenceCurrentIndex == 12)
     {
+        enterConfiguration();
+        return;
+    }
+
+    // Process prefix input
+    if (!numberInput.currentIndex)
+    {
+        if (currentReleasedKey == SK_Up || currentReleasedKey == SK_Down)
+        {
+            NumberInput_append(currentReleasedKey);
+            display.displayBuffer[0] = castTable[currentReleasedKey];
+        }
+    }
+
+    // Process double click
+    if (doubleClickTimeCounter && currentReleasedKey < SK_A &&
+        currentReleasedKey == keyboardPreviousReleasedKey)
+    {
+        keyboardPreviousReleasedKey = 0xFF;
         Display_clear();
         NumberInput_clear();
         ElevatorControl_cancleInternalRequest(keyboard.releasedKey);
         return;
     }
-    keyboardPreviousReleasedKey = keyboard.releasedKey;
+    keyboardPreviousReleasedKey = currentReleasedKey;
     doubleClickTimeCounter = DoubleClickTimeCounterInitial;
-    if (keyboard.releasedKey == SK_Enter)
+
+    if (currentReleasedKey == SK_Enter)
     {
         Display_clear();
         workState = WS_ProcessElevatorControl;
         return;
     }
-    if (keyboard.releasedKey == SK_Backspace)
+    if (currentReleasedKey == SK_Backspace)
     {
         display.displayBuffer[numberInput.currentIndex] = DS_Disabled;
         NumberInput_backspace();
@@ -476,9 +520,9 @@ void getElevatorControl()
     }
     if (numberInput.currentIndex >= 2)
         return;
-    if (keyboard.releasedKey > 9)
+    if (currentReleasedKey > 9)
         return;
-    floor = keyboard.releasedKey;
+    floor = currentReleasedKey;
     myItoa(
         ElevatorControl_indexToFloor(floor),
         (char*)&display.displayBuffer[numberInput.currentIndex]
