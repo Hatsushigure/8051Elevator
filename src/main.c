@@ -270,11 +270,17 @@ void processElevatorControl()
     workState = WS_GetElevatorControl;
 }
 
-void updateElevatorStatus() // TODO: Fix floor number update late
+void updateElevatorStatus()
 {
     char floorStr[2];
     updateAllFloorRequestDisplay();
     LcdDisplay_setCursorPos(3);
+    elevatorMoveCounter--;
+    if (elevatorMoveCounter == 0)
+    {
+        elevatorMoveCounter = ElevatorMoveCounterDefault;
+        ElevatorControl_move();
+    }
     if (elevatorControl.doorState == EDS_Closing)
         LcdDisplay_sendEmptyString(2);
     else
@@ -284,12 +290,6 @@ void updateElevatorStatus() // TODO: Fix floor number update late
             floorStr
         );
         LcdDisplay_sendString(floorStr, 2);
-    }
-    elevatorMoveCounter--;
-    if (elevatorMoveCounter == 0)
-    {
-        elevatorMoveCounter = ElevatorMoveCounterDefault;
-        ElevatorControl_move();
     }
     if (elevatorControl.doorState == EDS_Open)
     {
