@@ -14,12 +14,12 @@ void NumberInput_backspace()
         numberInput.currentIndex--;
 }
 
-uint8_t NumberInput_getNumber()
+void NumberInput_getNumber()
 {
     uint8_t i = 0;
-    uint8_t result = 0;
+    numberInput.result = 0;
     for (; i != numberInput.currentIndex; i++)
-        result = result * 10 + numberInput.inputBuffer[i];
-    return result;
+        numberInput.result =
+            numberInput.result * 10 + numberInput.inputBuffer[i];
 }
 
