@@ -62,7 +62,11 @@ extern Display display;
 void Display_init();
 void Display_displayCharacter(uint8_t item, uint8_t index);
 void Display_refreshDisplay();
-void Display_promptInput(uint8_t index);
+#define Display_promptInput(index)                                             \
+    {                                                                          \
+        display.displayBuffer[index] = display.currentPromptValue;             \
+    }
+
 void Display_clear();
 
 #endif // __DISPLAY_H__

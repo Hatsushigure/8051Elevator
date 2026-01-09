@@ -36,11 +36,6 @@ void Display_refreshDisplay()
     }
 }
 
-void Display_promptInput(uint8_t index)
-{
-    display.displayBuffer[index] = display.currentPromptValue;
-}
-
 void Display_clear()
 {
     uint8_t i = 6;

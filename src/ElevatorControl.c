@@ -8,11 +8,6 @@ int8_t ElevatorControl_indexToFloor(int8_t index)
     return index - (index <= 0);
 }
 
-void ElevatorControl_cancleInternalRequest(int8_t floorIndex)
-{
-    elevatorControl.requestBitmap[floorIndex] &= (~FR_Inside);
-}
-
 bit hasRequestAbove(uint8_t floorIndex)
 {
     uint8_t i = floorIndex + 1;
