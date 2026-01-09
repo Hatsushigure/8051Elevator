@@ -64,7 +64,8 @@ void getContentEx(
     uint8_t contentLength,
     uint8_t nextState,
     bit isPassword,
-    bit isElevatorFloor
+    bit isElevatorFloor,
+    bit isUint8
 );
 void getPassword();
 void getMaxPerson();
@@ -362,7 +363,8 @@ void getContentEx(
     uint8_t contentLength,
     uint8_t nextState,
     bit isPassword,
-    bit isElevatorFloor
+    bit isElevatorFloor,
+    bit isUint8
 )
 {
     if (!promptIsSet)
@@ -378,7 +380,11 @@ void getContentEx(
     keyboard.state = KS_Free;
     if (keyboard.releasedKey == SK_Enter)
     {
-        numberInput.result = NumberInput_getNumber();
+        if (numberInput.currentIndex == 0)
+            return;
+        NumberInput_getNumber();
+        if (isUint8 && (numberInput.result > 255 || numberInput.result == 0))
+            return;
         if (!isPassword)
             NumberInput_clear();
         promptIsSet = 0;
@@ -400,11 +406,8 @@ void getContentEx(
     if (keyboard.releasedKey > 9)
         return;
     if (isPassword)
-    {
-        LcdDisplay_sendCommand(CMD_Shift | CMD_Shift_Cursor | CMD_Shift_Left);
         LcdDisplay_sendData('*');
-    }
-    if (isElevatorFloor)
+    else if (isElevatorFloor)
     {
         myItoa(
             ElevatorControl_indexToFloor(keyboard.releasedKey),
@@ -418,24 +421,26 @@ void getContentEx(
 
 void getPassword()
 {
-    getContentEx(PasswordPrompt, 9, 6, WS_VarifyPassword, 1, 0);
+    getContentEx(PasswordPrompt, 9, 6, WS_VarifyPassword, 1, 0, 0);
 }
 
 void getMaxPerson()
 {
-    getContentEx(PersonPrompt, 11, 3, WS_GetMaxWeight, 0, 0);
+    getContentEx(PersonPrompt, 11, 3, WS_GetMaxWeight, 0, 0, 1);
     maxWeight = numberInput.result;
 }
 
 void getMaxWeight()
 {
-    getContentEx(WeightPrompt, 11, 3, WS_GetDoConfigDisabledFloor, 0, 0);
+    getContentEx(WeightPrompt, 11, 3, WS_GetDoConfigDisabledFloor, 0, 0, 1);
     maxPerson = numberInput.result;
 }
 
 void getDoConfigDisabledFloor()
 {
-    getContentEx(AskConfigDisableFloorPrompt, 16, 1, WS_GetDisabledFloor, 0, 0);
+    getContentEx(
+        AskConfigDisableFloorPrompt, 16, 1, WS_GetDisabledFloor, 0, 0, 0
+    );
     doGetDisableedFloor = (numberInput.result == 1);
 }
 
@@ -446,7 +451,9 @@ void getDisabledFloor()
         workState = WS_Finish;
         return;
     }
-    getContentEx(DisableFloorPrompt, 13, 1, WS_GetDoConfigDisabledFloor, 0, 1);
+    getContentEx(
+        DisableFloorPrompt, 13, 1, WS_GetDoConfigDisabledFloor, 0, 1, 0
+    );
     elevatorControl.floorEnableStatus[numberInput.result] = 0;
 }
 
